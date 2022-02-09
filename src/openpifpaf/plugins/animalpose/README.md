@@ -56,4 +56,4 @@ TODO
 
 ## Everything else
 All pifpaf options and commands still hold, please check the
-[DEV guide](https://openpifpaf.github.io/dev/intro.html)
+[DEV guide](https://vita-epfl.github.io/openpifpaf/dev/intro.html)

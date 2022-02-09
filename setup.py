@@ -65,9 +65,9 @@ setuptools.setup(
     description='PifPaf: Composite Fields for Human Pose Estimation',
     long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
-    author='Sven Kreiss',
-    author_email='research@svenkreiss.com',
-    url='https://github.com/openpifpaf/openpifpaf',
+    author='EPFL VITA',
+    author_email='epfl.vita@gmail.com',
+    url='https://github.com/vita-epfl/openpifpaf',
 
     packages=setuptools.find_packages('src'),
     package_dir={'': 'src'},
