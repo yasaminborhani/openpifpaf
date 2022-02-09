@@ -288,7 +288,7 @@ class ApolloToCoco:
         Initiate Json for training and val phase for the 24 kp and the 66 kp version
         """
         for j_file, n_kp in [(self.json_file_24, 24), (self.json_file_66, 66)]:
-            j_file["info"] = dict(url="https://github.com/openpifpaf/openpifpaf",
+            j_file["info"] = dict(url="https://github.com/vita-epfl/openpifpaf",
                                   date_created=time.strftime("%a, %d %b %Y %H:%M:%S +0000",
                                                              time.localtime()),
                                   description=("Conversion of ApolloCar3D dataset into MS-COCO"

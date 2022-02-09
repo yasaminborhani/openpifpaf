@@ -34,4 +34,4 @@ parts:
   - file: dev
   - file: performance
   - title: GitHub
-    url: https://github.com/openpifpaf/openpifpaf
+    url: https://github.com/vita-epfl/openpifpaf

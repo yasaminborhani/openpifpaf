@@ -1,8 +1,8 @@
 # Book settings
 title: OpenPifPaf Guide
-author: <a href="https://www.svenkreiss.com">Sven Kreiss</a> and <a href="https://github.com/openpifpaf/openpifpaf/graphs/contributors">contributors</a>.
-copyright: "2020-2021"
-email: research@svenkreiss.com
+author: <a href="https://www.epfl.ch/labs/vita/">EPFL VITA</a> and <a href="https://github.com/vita-epfl/openpifpaf/graphs/contributors">contributors</a>.
+copyright: "2020-2022"
+email: epfl.vita@gmail.com
 logo: logo.png
 exclude_patterns: [readme.md]
 
@@ -27,7 +27,7 @@ parse:
 
 # Information about where the book exists on the web
 repository:
-  url                       : https://github.com/openpifpaf/openpifpaf  # Online location of your book
+  url                       : https://github.com/vita-epfl/openpifpaf  # Online location of your book
   path_to_book              : guide  # Optional path to your book, relative to the repository root
   branch                    : stable  # Which branch of the repository should be used when creating links (optional)
 
@@ -50,7 +50,7 @@ sphinx:
         binderhub_url: https://mybinder.org
       path_to_docs: guide
       repository_branch: stable
-      repository_url: https://github.com/openpifpaf/openpifpaf
+      repository_url: https://github.com/vita-epfl/openpifpaf
       toc_title: "On this page"
       use_fullscreen_button: False
       use_issues_button: True
