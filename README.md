@@ -3,7 +3,7 @@
 Continuously tested on Linux, MacOS and Windows:
 [![Tests](https://github.com/vita-epfl/openpifpaf/workflows/Tests/badge.svg?branch=main)](https://github.com/vita-epfl/openpifpaf/actions?query=workflow%3ATests)
 [![deploy-guide](https://github.com/vita-epfl/openpifpaf/workflows/deploy-guide/badge.svg)](https://github.com/vita-epfl/openpifpaf/actions?query=workflow%3Adeploy-guide)
-[![Downloads](https://pepy.tech/badge/openpifpaf)](https://pepy.tech/project/openpifpaf)
+[![Downloads](https://pepy.tech/badge/openpifpaf-vita)](https://pepy.tech/project/openpifpaf-vita)
 <br />
 [__New__ 2021 paper](https://arxiv.org/abs/2103.02440):
 
@@ -28,6 +28,8 @@ Continuously tested on Linux, MacOS and Windows:
 > urban mobility such as self-driving cars and delivery robots.
 
 Previous [CVPR 2019 paper](http://openaccess.thecvf.com/content_CVPR_2019/html/Kreiss_PifPaf_Composite_Fields_for_Human_Pose_Estimation_CVPR_2019_paper.html).
+
+This project was forked from [OpenPifPaf v0.13.1](https://github.com/openpifpaf/openpifpaf/releases/tag/v0.13.1) and developed separately from version v0.14.0 on.
 
 
 # [Guide](https://vita-epfl.github.io/openpifpaf/intro.html)
