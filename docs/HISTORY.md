@@ -1,6 +1,9 @@
 # History
 
-* [main](https://github.com/openpifpaf/openpifpaf/compare/v0.13.1...main)
+* [main](https://github.com/vita-epfl/openpifpaf/compare/v0.14.0...main)
+* [0.14.0](https://github.com/openpifpaf/openpifpaf/compare/v0.13.1...vita-epfl:v0.14.0) (2022-02-14)
+    * create `openpifpaf-vita` package, with separate development from [`openpifpaf`](https://github.com/openpifpaf/openpifpaf)
+    * deploy [`openpifpaf-vita` guide](https://vita-epfl.github.io/openpifpaf/intro.html)
 * [0.13.1](https://github.com/openpifpaf/openpifpaf/compare/v0.13.0...v0.13.1) (2021-12-23)
     * fix torch==1.9.0 and torchvision==0.10.0 to solve install issues
 * [0.13.0](https://github.com/openpifpaf/openpifpaf/compare/v0.12.14...v0.13.0) (2021-09-26)
