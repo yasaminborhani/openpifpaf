@@ -60,7 +60,7 @@ add_cpp_extension()
 CMD_CLASS = versioneer.get_cmdclass(CMD_CLASS)
 setuptools.setup(
     name='openpifpaf-vita',
-    version='0.14.0',
+    version=versioneer.get_version(),
     license='GNU AGPLv3',
     description='PifPaf: Composite Fields for Pose Estimation',
     long_description=open('README.md', encoding='utf-8').read(),
