@@ -3,7 +3,7 @@
 # pylint: disable=wrong-import-position
 
 from . import _version
-__version__ = _version.get_versions()['version']
+__version__ = '0.14.0'#_version.get_versions()['version']
 
 # register ops first
 from . import cpp_extension
