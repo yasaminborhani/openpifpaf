@@ -96,6 +96,7 @@ setuptools.setup(
         ],
         'dev': [
             'flameprof',
+            'ipython<8',  # temporarily added to avoid broken output cells in jupyter-book
             'jupyter-book>=0.9.1',
             'matplotlib>=3.3',
             'nbdime',
@@ -108,28 +109,26 @@ setuptools.setup(
             'onnx',
             'onnxruntime',
             'onnx-simplifier>=0.2.9; python_version<"3.9"',  # Python 3.9 not supported yet
+            'protobuf<4',  # temporary explicit dependency until tests pass again
         ],
         'coreml': [
             'coremltools>=5.0b3',
         ],
         'test': [
             'cpplint',
-            'nbconvert',
+            'nbconvert<7',
             'nbstripout',
             'nbval',
-            'onnx',
-            'onnxruntime',
-            'onnx-simplifier>=0.2.9; python_version<"3.9"',  # Python 3.9 not supported yet
-            'pylint<2.9.4',  # avoid 2.9.4 and up for time.perf_counter deprecation warnings
-            'pycodestyle',
-            'pytest',
             'opencv-python',
+            'pycodestyle',
+            'pylint<2.9.4',  # avoid 2.9.4 and up for time.perf_counter deprecation warnings
+            'pytest',
             'tabulate',
             'thop',
         ],
         'train': [
             'matplotlib>=3.3',  # required by pycocotools
-            'pycocotools>=2.0.1',  # pre-install cython (currently incompatible with numpy 1.18 or above)
+            'pycocotools>=2.0.1,!=2.0.5',  # pre-install cython (currently incompatible with numpy 1.18 or above)
             'scipy',
             'xtcocotools>=1.5; sys_platform == "linux"',  # required for wholebody eval, only wheels and only for linux on pypi
         ],
