@@ -40,6 +40,25 @@ __[DEV Guide](https://vita-epfl.github.io/openpifpaf/dev/intro.html)__
 which is the same guide but based on the latest code in the `main` branch.
 
 
+# Installation
+
+This version of OpenPifPaf (`openpifpaf-vita`) cannot co-exist with the original one ([`openpifpaf`](https://github.com/openpifpaf/openpifpaf)) in the same environment.
+If you have previously installed the package `openpifpaf`, remove it before installation to avoid conflicts.
+
+Do not clone this repository.
+Make sure there is no folder named `openpifpaf-vita` in your current directory, and run:
+```sh
+pip3 install openpifpaf-vita
+```
+
+You need to install `matplotlib` to produce visual outputs:
+```sh
+pip3 install matplotlib
+```
+
+To modify OpenPifPaf itself, please follow [Modify Code](https://vita-epfl.github.io/openpifpaf/dev.html#modify-code).
+
+
 # Examples
 
 ![example image with overlaid pose predictions](https://github.com/vita-epfl/openpifpaf/raw/main/docs/coco/000000081988.jpg.predictions.jpeg)
@@ -47,7 +66,6 @@ which is the same guide but based on the latest code in the `main` branch.
 Image credit: "[Learning to surf](https://www.flickr.com/photos/fotologic/6038911779/in/photostream/)" by fotologic which is licensed under [CC-BY-2.0].<br />
 Created with:
 ```sh
-pip3 install matplotlib openpifpaf
 python3 -m openpifpaf.predict docs/coco/000000081988.jpg --image-output
 ```
 
