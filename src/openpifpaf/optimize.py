@@ -7,19 +7,21 @@ LOG = logging.getLogger(__name__)
 def cli(parser):
     group = parser.add_argument_group('optimizer')
     group.add_argument('--momentum', type=float, default=0.9,
-                       help='SGD momentum, beta1 in Adam')
+                       help='SGD momentum, beta1 in Adam/AdamW/AMSGrad')
     group.add_argument('--beta2', type=float, default=0.999,
-                       help='beta2 for Adam/AMSGrad')
+                       help='beta2 for Adam/AdamW/AMSGrad')
     group.add_argument('--adam-eps', type=float, default=1e-6,
-                       help='eps value for Adam/AMSGrad')
+                       help='eps value for Adam/AdamW/AMSGrad')
     group.add_argument('--no-nesterov', dest='nesterov', default=True, action='store_false',
                        help='do not use Nesterov momentum for SGD update')
     group.add_argument('--weight-decay', type=float, default=0.0,
-                       help='SGD/Adam/AMSGrad weight decay')
+                       help='SGD/Adam/AdamW/AMSGrad weight decay')
     group.add_argument('--adam', action='store_true',
                        help='use Adam optimizer')
+    group.add_argument('--adamw', action='store_true',
+                       help='use AdamW optimizer')
     group.add_argument('--amsgrad', action='store_true',
-                       help='use Adam optimizer with AMSGrad option')
+                       help='use AMSGrad option wth Adam or AdamW optimizer')
 
     group_s = parser.add_argument_group('learning rate scheduler')
     group_s.add_argument('--lr', type=float, default=1e-3,
@@ -88,8 +90,9 @@ class LearningRateLambda():
 
 
 def factory_optimizer(args, parameters):
+    assert not (args.adam and args.adamw), "only one of --adam and --adamw can be used"
     if args.amsgrad:
-        args.adam = True
+        assert args.adam or args.adamw, "need to use --adam or --adamw with --amsgrad"
 
     if args.adam:
         LOG.info('Adam optimizer')
@@ -97,6 +100,13 @@ def factory_optimizer(args, parameters):
             (p for p in parameters if p.requires_grad),
             lr=args.lr, betas=(args.momentum, args.beta2),
             weight_decay=args.weight_decay, eps=args.adam_eps, amsgrad=args.amsgrad)
+    elif args.adamw:
+        LOG.info('AdamW optimizer')
+        optimizer = torch.optim.AdamW(
+            (p for p in parameters if p.requires_grad),
+            lr=args.lr, betas=(args.momentum, args.beta2),
+            weight_decay=args.weight_decay, eps=args.adam_eps, amsgrad=args.amsgrad)
+
     else:
         LOG.info('SGD optimizer')
         optimizer = torch.optim.SGD(
