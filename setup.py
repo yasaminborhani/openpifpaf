@@ -123,6 +123,7 @@ setuptools.setup(
             'pycodestyle',
             'pylint<2.9.4',  # avoid 2.9.4 and up for time.perf_counter deprecation warnings
             'pytest',
+            'requests>=2.6.0',
             'tabulate',
             'thop',
         ],
