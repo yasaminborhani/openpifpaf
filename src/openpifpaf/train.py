@@ -64,6 +64,8 @@ def cli():
     parser.add_argument('--no-sync-batchnorm', dest='sync_batchnorm',
                         default=True, action='store_false',
                         help='[experimental] in ddp, to not use syncbatchnorm')
+    parser.add_argument('--resume-training', default=None,
+                        help='resume training from optimization checkpoint')
 
     logger.cli(parser)
     network.Factory.cli(parser)
@@ -183,6 +185,16 @@ def main():
         args, list(net.parameters()) + list(loss.parameters()))
     lr_scheduler = optimize.factory_lrscheduler(
         args, optimizer, len(train_loader), last_epoch=start_epoch)
+
+    if args.resume_training is not None:
+        LOG.info('Resuming optimizer and loss states from checkpoint')
+        try:
+            optim_checkpoint = torch.load(args.resume_training, map_location=torch.device('cpu'))
+        except FileNotFoundError as e:
+            raise Exception('Optimization checkpoint "{}" not found.') from e
+        optimizer.load_state_dict(optim_checkpoint['optimizer'])
+        loss.load_state_dict(optim_checkpoint['loss'])
+
     trainer = network.Trainer(
         net, loss, optimizer, args.output,
         checkpoint_shell=checkpoint_shell,
