@@ -44,6 +44,16 @@ def default_output_file(args):
     return out + '.pkl'
 
 
+def resume_training_state(optim_checkpoint_path, optimizer, loss):
+    LOG.info('Resuming optimizer and loss states from checkpoint')
+    try:
+        optim_checkpoint = torch.load(optim_checkpoint_path, map_location=torch.device('cpu'))
+    except FileNotFoundError as e:
+        raise Exception('Optimization checkpoint "{}" not found.') from e
+    optimizer.load_state_dict(optim_checkpoint['optimizer'])
+    loss.load_state_dict(optim_checkpoint['loss'])
+
+
 def cli():
     parser = argparse.ArgumentParser(
         prog='python3 -m openpifpaf.train',
@@ -187,13 +197,7 @@ def main():
         args, optimizer, len(train_loader), last_epoch=start_epoch)
 
     if args.resume_training is not None:
-        LOG.info('Resuming optimizer and loss states from checkpoint')
-        try:
-            optim_checkpoint = torch.load(args.resume_training, map_location=torch.device('cpu'))
-        except FileNotFoundError as e:
-            raise Exception('Optimization checkpoint "{}" not found.') from e
-        optimizer.load_state_dict(optim_checkpoint['optimizer'])
-        loss.load_state_dict(optim_checkpoint['loss'])
+        resume_training_state(args.resume_training, optimizer, loss)
 
     trainer = network.Trainer(
         net, loss, optimizer, args.output,
