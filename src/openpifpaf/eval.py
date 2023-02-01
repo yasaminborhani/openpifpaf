@@ -143,7 +143,7 @@ def evaluate(args):
         time.sleep(args.loader_warmup)
         LOG.info('Done.')
 
-    image_number = min(len(data_loader.dataset), len(data_loader)*data_loader.batch_size)
+    image_number = min(len(data_loader.dataset), len(data_loader) * data_loader.batch_size)
     metrics = datamodule.metrics()
     total_start = time.perf_counter()
     loop_start = time.perf_counter()
