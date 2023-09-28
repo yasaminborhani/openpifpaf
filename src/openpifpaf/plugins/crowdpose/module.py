@@ -180,6 +180,7 @@ class CrowdPose(openpifpaf.datasets.DataModule):
         # crowdpose specific
         cls.train_annotations = args.crowdpose_train_annotations
         cls.val_annotations = args.crowdpose_val_annotations
+        cls.eval_annotations = cls.val_annotations
         cls.image_dir = args.crowdpose_image_dir
 
         cls.square_edge = args.crowdpose_square_edge

@@ -26,7 +26,7 @@ except ModuleNotFoundError as err:
         raise err
     cv2 = None  # pylint: disable=invalid-name
 
-from .constants import CAR_KEYPOINTS_24, CAR_SKELETON_24,\
+from .constants import CAR_KEYPOINTS_24, CAR_SKELETON_24, \
     CAR_KEYPOINTS_66, CAR_SKELETON_66, KPS_MAPPING
 from .transforms import skeleton_mapping
 

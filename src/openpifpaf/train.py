@@ -5,6 +5,7 @@ import copy
 import datetime
 import logging
 import os
+import platform
 import socket
 
 import torch
@@ -42,6 +43,46 @@ def default_output_file(args):
             out += 's'
 
     return out + '.pkl'
+
+
+def ddp_setup(args):
+    assert args.ddp
+    slurm_process_id = os.environ.get('SLURM_PROCID')
+    if slurm_process_id is not None:
+        # DDP with SLURM
+        if torch.cuda.device_count() > 1:
+            LOG.warning('Expected one GPU per SLURM task but found %d. '
+                        'Try with "srun --gpu-bind=closest ...". Still trying.',
+                        torch.cuda.device_count())
+
+        # if there is more than one GPU available, assume that other SLURM tasks
+        # have access to the same GPUs and assign GPUs uniquely by slurm_process_id
+        args.local_rank = (int(slurm_process_id) % torch.cuda.device_count()
+                           if torch.cuda.device_count() > 0 else 0)
+
+        os.environ['RANK'] = slurm_process_id
+        if not os.environ.get('WORLD_SIZE') and os.environ.get('SLURM_NTASKS'):
+            os.environ['WORLD_SIZE'] = os.environ.get('SLURM_NTASKS')
+
+        LOG.info('found SLURM process id: %s', slurm_process_id)
+        LOG.info('distributed env: master=%s port=%s rank=%s world=%s, '
+                 'local rank (GPU)=%d',
+                 os.environ.get('MASTER_ADDR'), os.environ.get('MASTER_PORT'),
+                 os.environ.get('RANK'), os.environ.get('WORLD_SIZE'),
+                 args.local_rank)
+    elif slurm_process_id is None:
+        # DDP without SLURM (environment variables need to be set before)
+        assert os.environ.get('WORLD_SIZE') is not None
+        assert os.environ.get('RANK') is not None
+        assert os.environ.get('LOCAL_RANK') is not None
+        assert os.environ.get('MASTER_ADDR') is not None
+        assert os.environ.get('MASTER_PORT') is not None
+        args.local_rank = int(os.environ.get("LOCAL_RANK"))
+        LOG.info('distributed env: master=%s port=%s rank=%s world=%s, '
+                 'local rank (GPU)=%d',
+                 os.environ.get('MASTER_ADDR'), os.environ.get('MASTER_PORT'),
+                 os.environ.get('RANK'), os.environ.get('WORLD_SIZE'),
+                 args.local_rank)
 
 
 def resume_training_state(optim_checkpoint_path, optimizer, loss):
@@ -93,29 +134,8 @@ def cli():
     if args.log_stats:
         logging.getLogger('openpifpaf.stats').setLevel(logging.DEBUG)
 
-    # DDP with SLURM
-    slurm_process_id = os.environ.get('SLURM_PROCID')
-    if args.ddp and slurm_process_id is not None:
-        if torch.cuda.device_count() > 1:
-            LOG.warning('Expected one GPU per SLURM task but found %d. '
-                        'Try with "srun --gpu-bind=closest ...". Still trying.',
-                        torch.cuda.device_count())
-
-        # if there is more than one GPU available, assume that other SLURM tasks
-        # have access to the same GPUs and assign GPUs uniquely by slurm_process_id
-        args.local_rank = (int(slurm_process_id) % torch.cuda.device_count()
-                           if torch.cuda.device_count() > 0 else 0)
-
-        os.environ['RANK'] = slurm_process_id
-        if not os.environ.get('WORLD_SIZE') and os.environ.get('SLURM_NTASKS'):
-            os.environ['WORLD_SIZE'] = os.environ.get('SLURM_NTASKS')
-
-        LOG.info('found SLURM process id: %s', slurm_process_id)
-        LOG.info('distributed env: master=%s port=%s rank=%s world=%s, '
-                 'local rank (GPU)=%d',
-                 os.environ.get('MASTER_ADDR'), os.environ.get('MASTER_PORT'),
-                 os.environ.get('RANK'), os.environ.get('WORLD_SIZE'),
-                 args.local_rank)
+    if args.ddp:
+        ddp_setup(args)
 
     # add args.device
     args.device = torch.device('cpu')
@@ -144,6 +164,9 @@ def cli():
 
 def main():
     args = cli()
+
+    LOG.info('Running Python %s', platform.python_version())
+    LOG.info('Running PyTorch %s', torch.__version__)
 
     datamodule = datasets.factory(args.dataset)
 

@@ -141,8 +141,10 @@ class AnimalKp(DataModule):
         # Animal specific
         cls.train_annotations = args.animal_train_annotations
         cls.val_annotations = args.animal_val_annotations
+        cls.eval_annotations = cls.val_annotations
         cls.train_image_dir = args.animal_train_image_dir
         cls.val_image_dir = args.animal_val_image_dir
+        cls.eval_image_dir = cls.val_image_dir
 
         cls.square_edge = args.animal_square_edge
         cls.extended_scale = args.animal_extended_scale

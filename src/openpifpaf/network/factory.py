@@ -14,11 +14,58 @@ from . import swin_transformer, xcit
 from .tracking_base import TrackingBase
 
 
-# monkey patch torchvision for mobilenetv2 checkpoint backwards compatibility
-if hasattr(torchvision.models, 'mobilenetv2') \
-   and not hasattr(torchvision.models.mobilenet, 'ConvBNReLU'):
-    torchvision.models.mobilenet.ConvBNReLU = torchvision.models.mobilenetv2.ConvBNReLU
-    torchvision.models.mobilenet.InvertedResidual = torchvision.models.mobilenetv2.InvertedResidual
+# monkey patch torchvision for mobilenet checkpoints' backwards compatibility
+if (
+    hasattr(torchvision.models, 'mobilenetv3')
+    and hasattr(torchvision.models.mobilenetv3, 'Conv2dNormActivation')  # type: ignore
+):
+    torchvision.models.mobilenet.ConvBNReLU = \
+        torchvision.models.mobilenetv3.Conv2dNormActivation  # type: ignore
+    torchvision.models.mobilenet.ConvBNActivation = \
+        torchvision.models.mobilenetv2.Conv2dNormActivation  # type: ignore
+    torchvision.models.mobilenetv2.ConvBNReLU = \
+        torchvision.models.mobilenetv3.Conv2dNormActivation  # type: ignore
+    torchvision.models.mobilenetv2.ConvBNActivation = \
+        torchvision.models.mobilenetv2.Conv2dNormActivation  # type: ignore
+    torchvision.models.mobilenetv3.ConvBNReLU = \
+        torchvision.models.mobilenetv3.Conv2dNormActivation  # type: ignore
+    torchvision.models.mobilenetv3.ConvBNActivation = \
+        torchvision.models.mobilenetv3.Conv2dNormActivation  # type: ignore
+elif (
+    hasattr(torchvision.models, 'mobilenetv3')
+    and hasattr(torchvision.models.mobilenetv3, 'ConvBNActivation')  # type: ignore
+):
+    torchvision.models.mobilenet.ConvBNReLU = \
+        torchvision.models.mobilenetv3.ConvBNActivation  # type: ignore
+    torchvision.models.mobilenetv2.ConvBNReLU = \
+        torchvision.models.mobilenetv3.ConvBNActivation  # type: ignore
+    torchvision.models.mobilenetv3.ConvBNReLU = \
+        torchvision.models.mobilenetv3.ConvBNActivation  # type: ignore
+elif (
+    hasattr(torchvision.models, 'mobilenetv2')
+    and hasattr(torchvision.models.mobilenetv2, 'ConvBNReLU')  # type: ignore
+):
+    torchvision.models.mobilenet.ConvBNReLU = \
+        torchvision.models.mobilenetv2.ConvBNReLU  # type: ignore
+if (
+    not hasattr(torchvision.models.mobilenet, 'InvertedResidual')
+    and hasattr(torchvision.models, 'mobilenetv2')
+    and hasattr(torchvision.models.mobilenetv2, 'InvertedResidual')  # type: ignore
+):
+    torchvision.models.mobilenet.InvertedResidual = \
+        torchvision.models.mobilenetv2.InvertedResidual  # type: ignore
+if (
+    hasattr(torchvision.models, 'mobilenetv3')
+    and not hasattr(torchvision.models.mobilenetv3, 'SqueezeExcitation')
+):
+    if not hasattr(torchvision.ops.misc.SqueezeExcitation, 'avgpool'):
+        torchvision.ops.misc.SqueezeExcitation.avgpool = \
+            torch.nn.AdaptiveAvgPool2d(1)  # type: ignore
+        torchvision.ops.misc.SqueezeExcitation.activation = torch.nn.ReLU()  # type: ignore
+        torchvision.ops.misc.SqueezeExcitation.scale_activation = \
+            torch.nn.Hardsigmoid()  # type: ignore
+    torchvision.models.mobilenetv3.SqueezeExcitation = \
+        torchvision.ops.misc.SqueezeExcitation  # type: ignore
 
 
 # generate hash values with: shasum -a 256 filename.pkl

@@ -9,6 +9,11 @@ from ..preprocess import Preprocess
 LOG = logging.getLogger(__name__)
 
 
+# patch for backward compatibility
+if not hasattr(PIL.Image, 'Transform'):
+    PIL.Image.Transform = PIL.Image
+
+
 class CameraShift(Preprocess):
     def __init__(self, max_shift=100):
         super().__init__()
@@ -24,7 +29,7 @@ class CameraShift(Preprocess):
 
         # shift image
         affine_params = (1.0, 0.0, xy_shift[0], 0.0, 1.0, xy_shift[1])
-        image = image.transform(image.size, PIL.Image.AFFINE, affine_params,
+        image = image.transform(image.size, PIL.Image.Transform.AFFINE, affine_params,
                                 fillcolor=(127, 127, 127))
 
         # shift all annotations

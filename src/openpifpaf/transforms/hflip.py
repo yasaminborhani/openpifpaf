@@ -9,6 +9,11 @@ from .preprocess import Preprocess
 LOG = logging.getLogger(__name__)
 
 
+# patch for backward compatibility
+if not hasattr(PIL.Image, 'Transpose'):
+    PIL.Image.Transpose = PIL.Image
+
+
 class _HorizontalSwap():
     def __init__(self, keypoints, hflip):
         self.keypoints = keypoints
@@ -47,7 +52,7 @@ class HFlip(Preprocess):
         anns = copy.deepcopy(anns)
 
         w, _ = image.size
-        image = image.transpose(PIL.Image.FLIP_LEFT_RIGHT)
+        image = image.transpose(PIL.Image.Transpose.FLIP_LEFT_RIGHT)
         for ann in anns:
             ann['keypoints'][:, 0] = -ann['keypoints'][:, 0] - 1.0 + w
             if self.swap is not None and not ann['iscrowd']:

@@ -93,8 +93,10 @@ class CocoDet(openpifpaf.datasets.DataModule):
         # cocodet specific
         cls.train_annotations = args.cocodet_train_annotations
         cls.val_annotations = args.cocodet_val_annotations
+        cls.eval_annotations = cls.val_annotations
         cls.train_image_dir = args.cocodet_train_image_dir
         cls.val_image_dir = args.cocodet_val_image_dir
+        cls.eval_image_dir = cls.val_image_dir
 
         cls.square_edge = args.cocodet_square_edge
         cls.extended_scale = args.cocodet_extended_scale
