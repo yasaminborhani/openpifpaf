@@ -1,6 +1,12 @@
 # History
 
-* [main](https://github.com/vita-epfl/openpifpaf/compare/v0.14.0...main)
+* [main](https://github.com/vita-epfl/openpifpaf/compare/v0.14.1...main)
+* [0.14.1](https://github.com/vita-epfl/openpifpaf/compare/v0.14.0...v0.14.1) (2023-09-28)
+    * flexible compatibility with recent PyTorch versions
+    * option to resume optimizer's state from checkpoint
+    * AdamW optimizer, linear learning rate scheduler
+    * fast scaling as default for data augmentation
+    * improve configuration and display for eval
 * [0.14.0](https://github.com/openpifpaf/openpifpaf/compare/v0.13.1...vita-epfl:v0.14.0) (2022-02-14)
     * create `openpifpaf-vita` package, with separate development from [`openpifpaf`](https://github.com/openpifpaf/openpifpaf)
     * deploy [`openpifpaf-vita` guide](https://vita-epfl.github.io/openpifpaf/intro.html)
