@@ -1,8 +1,8 @@
 # openpifpaf
 
 Continuously tested on Linux, MacOS and Windows:
-[![Tests](https://github.com/vita-epfl/openpifpaf/workflows/Tests/badge.svg?branch=main)](https://github.com/vita-epfl/openpifpaf/actions?query=workflow%3ATests)
-[![deploy-guide](https://github.com/vita-epfl/openpifpaf/workflows/deploy-guide/badge.svg)](https://github.com/vita-epfl/openpifpaf/actions?query=workflow%3Adeploy-guide)
+[![Tests](https://github.com/vita-epfl/openpifpaf/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/vita-epfl/openpifpaf/actions?query=workflow%3ATests)
+[![deploy-guide](https://github.com/vita-epfl/openpifpaf/actions/workflows/deploy-guide.yml/badge.svg)](https://github.com/vita-epfl/openpifpaf/actions?query=workflow%3Adeploy-guide)
 [![Downloads](https://pepy.tech/badge/openpifpaf-vita)](https://pepy.tech/project/openpifpaf-vita)
 <br />
 [__New__ 2021 paper](https://arxiv.org/abs/2103.02440):
