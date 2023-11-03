@@ -127,7 +127,7 @@ class CifGenerator():
         self.fields_bmin[f, miny:maxy, minx:maxx][mask] = bmin
 
         # update scale
-        assert np.isnan(scale) or 0.0 < scale < 100.0
+        assert np.isnan(scale) or scale > 0.0
         self.fields_scale[f, miny:maxy, minx:maxx][mask] = scale
 
     def fields(self, valid_area):

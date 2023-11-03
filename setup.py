@@ -92,6 +92,9 @@ setuptools.setup(
         'backbones': [
             'timm>=0.4.9',  # For Swin Transformer and XCiT
             'einops>=0.3',  # required for BotNet
+            'mmengine',
+            'mmcv>=2.0',
+            'mmpose>=1.0',  # for HRFormer
         ],
         'dev': [
             'flameprof',

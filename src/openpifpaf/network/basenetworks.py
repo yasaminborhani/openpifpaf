@@ -765,3 +765,34 @@ class BotNet(BaseNetwork):
     @classmethod
     def configure(cls, args: argparse.Namespace):
         cls.input_image_size = args.botnet_input_image_size
+
+
+class HRFormer(BaseNetwork):
+    scale_level = 0
+    pretrained = True
+    unused_parameters = True  # For DDP initialization
+
+    def __init__(self, name, hrformer_net):
+        stride = 4 * (2 ** self.scale_level)
+        hrformer_backbone, out_features = hrformer_net(self.scale_level, self.pretrained)
+        super().__init__(name, stride=stride, out_features=out_features)
+        self.backbone = hrformer_backbone
+
+    def forward(self, x):
+        return self.backbone(x)[0]
+
+    @classmethod
+    def cli(cls, parser: argparse.ArgumentParser):
+        group = parser.add_argument_group('HRFormer')
+        group.add_argument('--hrformer-scale-level',
+                           type=int, default=cls.scale_level,
+                           help='level of the HRFormer pyramid')
+        assert cls.pretrained
+        group.add_argument('--hrformer-no-pretrain', dest='hrformer_pretrained',
+                           default=True, action='store_false',
+                           help='use randomly initialized models')
+
+    @classmethod
+    def configure(cls, args: argparse.Namespace):
+        cls.scale_level = args.hrformer_scale_level
+        cls.pretrained = args.hrformer_pretrained

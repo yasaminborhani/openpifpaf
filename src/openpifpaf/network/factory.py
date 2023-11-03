@@ -10,7 +10,7 @@ import torchvision
 from .. import headmeta
 from ..configurable import Configurable
 from . import basenetworks, heads, model_migration, nets, tracking_heads
-from . import swin_transformer, xcit
+from . import hrformer, swin_transformer, xcit
 from .tracking_base import TrackingBase
 
 
@@ -77,6 +77,7 @@ PRETRAINED_UNAVAILABLE = object()
 CHECKPOINT_URLS = {}
 
 BASE_TYPES = set([
+    basenetworks.HRFormer,
     basenetworks.MobileNetV2,
     basenetworks.MobileNetV3,
     basenetworks.Resnet,
@@ -234,6 +235,15 @@ BASE_FACTORIES = {
                                                      ],
                                                      stride=16),
     'botnet': lambda: basenetworks.BotNet('botnet'),
+    # HRFormer architectures
+    'hrformersmall': lambda: basenetworks.HRFormer(
+        'hrformersmall', hrformer.hrformersmall),
+    'hrformersmallcat': lambda: basenetworks.HRFormer(
+        'hrformersmallcat', hrformer.hrformersmallcat),
+    'hrformerbase': lambda: basenetworks.HRFormer(
+        'hrformerbase', hrformer.hrformerbase),
+    'hrformerbasecat': lambda: basenetworks.HRFormer(
+        'hrformerbasecat', hrformer.hrformerbasecat),
 }
 # base factories that wrap other base factories:
 BASE_FACTORIES['tshufflenetv2k16'] = lambda: TrackingBase(BASE_FACTORIES['shufflenetv2k16']())

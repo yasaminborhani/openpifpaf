@@ -198,10 +198,13 @@ def main():
             net_cpu = torch.nn.SyncBatchNorm.convert_sync_batchnorm(net_cpu)
         else:
             LOG.info('not converting batchnorms to syncbatchnorms')
+        unused_parameters = (isinstance(datamodule, datasets.MultiDataModule)
+                             or (hasattr(net_cpu.base_net, 'unused_parameters')
+                                 and net_cpu.base_net.unused_parameters))
         net = torch.nn.parallel.DistributedDataParallel(
             net_cpu.to(device=args.device),
             device_ids=[args.local_rank], output_device=args.local_rank,
-            find_unused_parameters=isinstance(datamodule, datasets.MultiDataModule),
+            find_unused_parameters=unused_parameters,
         )
         loss = loss.to(device=args.device)
     else:
