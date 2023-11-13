@@ -796,3 +796,27 @@ class HRFormer(BaseNetwork):
     def configure(cls, args: argparse.Namespace):
         cls.scale_level = args.hrformer_scale_level
         cls.pretrained = args.hrformer_pretrained
+
+
+class ConvNeXtV2(BaseNetwork):
+    pretrained = True
+
+    def __init__(self, name, convnextv2_net):
+        convnextv2_backbone, out_features = convnextv2_net(self.pretrained)
+        super().__init__(name, stride=32, out_features=out_features)
+        self.backbone = convnextv2_backbone
+
+    def forward(self, x):
+        return self.backbone(x)[0]
+
+    @classmethod
+    def cli(cls, parser: argparse.ArgumentParser):
+        group = parser.add_argument_group('ConvNeXtV2')
+        assert cls.pretrained
+        group.add_argument('--convnextv2-no-pretrain', dest='convnextv2_pretrained',
+                           default=True, action='store_false',
+                           help='use randomly initialized models')
+
+    @classmethod
+    def configure(cls, args: argparse.Namespace):
+        cls.pretrained = args.convnextv2_pretrained

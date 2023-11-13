@@ -95,6 +95,7 @@ setuptools.setup(
             'mmengine',
             'mmcv>=2.0',
             'mmpose>=1.0',  # for HRFormer
+            'mmpretrain',  # for ConvNeXt V2
         ],
         'dev': [
             'flameprof',
