@@ -104,9 +104,15 @@ setuptools.setup(
             'jupyter-book>=0.9.1,<0.14',  # breaking changes introduced in 0.14
             'matplotlib>=3.3',
             'nbdime',
-            'nbstripout',
+            'nbstripout<0.7',  # breaking changes introduced in 0.7
             'scipy',
             'sphinx-book-theme',
+            'sphinxcontrib-applehelp<=1.0.4',
+            'sphinxcontrib-devhelp<=1.0.2',
+            'sphinxcontrib-htmlhelp<=2.0.1',
+            'sphinxcontrib-jsmath<=1.0.1',
+            'sphinxcontrib-qthelp<=1.0.3',
+            'sphinxcontrib-serializinghtml<=1.1.5',
             'wheel',
         ],
         'onnx': [
@@ -120,7 +126,7 @@ setuptools.setup(
         'test': [
             'cpplint',
             'nbconvert<7',
-            'nbstripout',
+            'nbstripout<0.7',  # breaking changes introduced in 0.7
             'nbval',
             'opencv-python',
             'pycodestyle',
