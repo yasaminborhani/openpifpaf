@@ -61,11 +61,11 @@ jobs:
     steps:
     - run: ls -n /Applications/ | grep Xcode*
       if: matrix.os == 'macos-latest'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Cache checkpoints and data
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache
@@ -73,7 +73,7 @@ jobs:
         key: ${{ runner.os }}-${{ hashFiles('setup.py') }}
     - name: Set up Python ${{ matrix.python }}
       if: ${{ !matrix.conda }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
     - name: Set up Conda
@@ -105,7 +105,7 @@ jobs:
         python -m pip install cython --no-build-isolation
         python -m pip install -e ".[train]" --no-build-isolation
     - name: Install ffmpeg for Guide test
-      uses: FedericoCarboni/setup-ffmpeg@v2
+      uses: FedericoCarboni/setup-ffmpeg@v3
       if: matrix.slow
       id: setup-ffmpeg
     - name: ffmpeg codecs
