@@ -96,6 +96,7 @@ setuptools.setup(
             'mmcv>=2.0',
             'mmpose>=1.0',  # for HRFormer
             'mmpretrain',  # for ConvNeXt V2
+            'open_clip_torch',  # for CLIP-ConvNeXt
         ],
         'dev': [
             'flameprof',

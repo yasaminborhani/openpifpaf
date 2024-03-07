@@ -10,7 +10,7 @@ import torchvision
 from .. import headmeta
 from ..configurable import Configurable
 from . import basenetworks, heads, model_migration, nets, tracking_heads
-from . import convnextv2, hrformer, swin_transformer, xcit
+from . import clipconvnext, convnextv2, hrformer, swin_transformer, xcit
 from .tracking_base import TrackingBase
 
 
@@ -77,6 +77,7 @@ PRETRAINED_UNAVAILABLE = object()
 CHECKPOINT_URLS = {}
 
 BASE_TYPES = set([
+    basenetworks.CLIPConvNeXt,
     basenetworks.ConvNeXtV2,
     basenetworks.HRFormer,
     basenetworks.MobileNetV2,
@@ -248,6 +249,10 @@ BASE_FACTORIES = {
     # ConvNeXt V2 architecture
     'convnextv2base': lambda: basenetworks.ConvNeXtV2(
         'convnextv2base', convnextv2.convnextv2base),
+    # CLIPConvNeXt architecture
+    'clipconvnextbase': lambda: basenetworks.CLIPConvNeXt(
+        'clipconvnextbase', clipconvnext.clipconvnextbase),
+
 }
 # base factories that wrap other base factories:
 BASE_FACTORIES['tshufflenetv2k16'] = lambda: TrackingBase(BASE_FACTORIES['shufflenetv2k16']())

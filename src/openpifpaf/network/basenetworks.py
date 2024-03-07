@@ -820,3 +820,28 @@ class ConvNeXtV2(BaseNetwork):
     @classmethod
     def configure(cls, args: argparse.Namespace):
         cls.pretrained = args.convnextv2_pretrained
+
+
+class CLIPConvNeXt(BaseNetwork):
+    pretrained = True
+    unused_parameters = True  # For DDP initialization
+
+    def __init__(self, name, clipconvnext_net):
+        clipconvnext_backbone, out_features = clipconvnext_net(self.pretrained)
+        super().__init__(name, stride=32, out_features=out_features)
+        self.backbone = clipconvnext_backbone
+
+    def forward(self, x):
+        return self.backbone.visual.trunk.forward_features(x)
+
+    @classmethod
+    def cli(cls, parser: argparse.ArgumentParser):
+        group = parser.add_argument_group('CLIPConvNeXt')
+        assert cls.pretrained
+        group.add_argument('--clipconvnext-no-pretrain', dest='clipconvnext_pretrained',
+                           default=True, action='store_false',
+                           help='use randomly initialized models')
+
+    @classmethod
+    def configure(cls, args: argparse.Namespace):
+        cls.pretrained = args.clipconvnext_pretrained
