@@ -109,6 +109,22 @@ Performance metrics on the COCO val set obtained with a GTX1080Ti:
 
 Command to reproduce this table: {ref}`python -m openpifpaf.benchmark --checkpoints resnet50 shufflenetv2k16 shufflenetv2k30 <cli-help-benchmark>`.
 
+Performance metrics on the COCO val set obtained with a NVIDIA A100:
+
+| Name                    | AP       | AP0.5    | AP0.75   | APM      | APL      | t_{total} [ms] | t_{NN} [ms] | t_{dec} [ms] |     size |
+|------------------------:|:--------:|:--------:|:--------:|:--------:|:--------:|---------------:|------------:|-------------:|---------:|
+| [clipconvnextbase]      | __69.3__ | 87.8     | 75.5     | 63.2     | 78.4     | 110            | 86          | 15           |    688MB |
+| [convnextv2base]        | __70.5__ | 87.9     | 76.9     | 64.2     | 79.7     | 138            | 113         | 17           |    338MB |
+| [hrformerbasecat]       | __73.4__ | 89.9     | 80.0     | 69.1     | 80.2     | 312            | 239         | 62           |    331MB |
+| [shufflenetv2k30*]      | __73.8__ | 90.1     | 80.2     | 69.7     | 80.4     | 112            | 73          | 30           |    115MB |
+| [swin_l_input_upsample] | __75.8__ | 90.9     | 82.6     | 72.1     | 81.8     | 635            | 606         | 23           |    750MB |
+
+[clipconvnextbase]: https://github.com/vita-epfl/openpifpaf-torchhub/releases/download/v0.14.2/cocokp-clipconvnextbase.pt.epoch250
+[convnextv2base]: https://github.com/vita-epfl/openpifpaf-torchhub/releases/download/v0.14.2/cocokp-convnextv2base.pt.epoch250
+[hrformerbasecat]: https://github.com/vita-epfl/openpifpaf-torchhub/releases/download/v0.14.2/cocokp-hrformerbasecat.pt.epoch250
+[shufflenetv2k30*]: https://github.com/vita-epfl/openpifpaf-torchhub/releases/download/v0.14.2/cocokp-shufflenetv2k30.pt.epoch350
+[swin_l_input_upsample]: https://github.com/vita-epfl/openpifpaf-torchhub/releases/download/v0.14.2/cocokp-swinl-inputupsample.pt.epoch250
+
 Pretrained model files are shared in the __[vita-epfl/openpifpaf-torchhub](https://github.com/vita-epfl/openpifpaf-torchhub/releases)__ and __[openpifpaf/torchhub](https://github.com/openpifpaf/torchhub/releases)__
 repositories and linked from the checkpoint names in the table above.
 The pretrained models are downloaded automatically when
