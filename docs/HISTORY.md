@@ -1,6 +1,9 @@
 # History
 
-* [main](https://github.com/vita-epfl/openpifpaf/compare/v0.14.1...main)
+* [main](https://github.com/vita-epfl/openpifpaf/compare/v0.14.2...main)
+* [0.14.2](https://github.com/vita-epfl/openpifpaf/compare/v0.14.1...v0.14.2) (2024-03-14)
+    * new backbones available (ConvNeXt, ConvNeXtV2, HRFormer)
+    * new checkpoints available (`clipconvnextbase`, `convnextv2base`, `hrformerbasecat`, `shufflenetv2k30*`, `swin_l_input_upsample`)
 * [0.14.1](https://github.com/vita-epfl/openpifpaf/compare/v0.14.0...v0.14.1) (2023-09-28)
     * flexible compatibility with recent PyTorch versions
     * option to resume optimizer's state from checkpoint
