@@ -18,7 +18,7 @@ import numpy as np
 try:
     from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 except ImportError:
-    pass
+    from timm.layers import DropPath, to_2tuple, trunc_normal_
 
 
 class Mlp(nn.Module):
