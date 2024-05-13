@@ -342,6 +342,9 @@ class Factory(Configurable):
                            default=cls.head_consolidation,
                            help=('consolidation strategy for a checkpoint\'s head '
                                  'networks and the heads specified by the datamodule'))
+        group.add_argument('--path-to-save-url-weights',
+                          default=None,
+                          help=('path to save weights which are downloaded from url'))
 
     @classmethod
     def configure(cls, args: argparse.Namespace):
@@ -432,6 +435,7 @@ class Factory(Configurable):
                 checkpoint = torch.hub.load_state_dict_from_url(
                     checkpoint,
                     check_hash=not checkpoint.startswith('https'),
+                    model_dir=args.path_to_save_url_weights,
                     progress=self.download_progress)
             else:
                 try:
