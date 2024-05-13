@@ -358,6 +358,8 @@ class Factory(Configurable):
         cls.cross_talk = args.cross_talk
         cls.download_progress = args.download_progress
         cls.head_consolidation = args.head_consolidation
+        cls.path_to_save_url_weights = args.path_to_save_url_weights
+
 
     def factory(self, *, head_metas=None) -> Tuple[nets.Shell, int]:
         if self.base_name:
@@ -435,7 +437,7 @@ class Factory(Configurable):
                 checkpoint = torch.hub.load_state_dict_from_url(
                     checkpoint,
                     check_hash=not checkpoint.startswith('https'),
-                    model_dir=args.path_to_save_url_weights,
+                    model_dir=self.path_to_save_url_weights,
                     progress=self.download_progress)
             else:
                 try:
