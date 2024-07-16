@@ -27,7 +27,7 @@ def cli(parser):
     group_s.add_argument('--lr', type=float, default=1e-3,
                          help='learning rate')
     group_s.add_argument('--lr-decay-type', default='step',
-                         help='type of decay ("step" or "linear")')
+                         help='type of decay ("step" or "linear" or "cosine")')
     group_s.add_argument('--lr-decay', default=[], nargs='+', type=float,
                          help='epochs at which to decay the learning rate')
     group_s.add_argument('--lr-decay-factor', default=0.1, type=float,
@@ -106,6 +106,13 @@ class LearningRateLambda():
             decay_start_epoch = self.warm_up_start_epoch + self.warm_up_epochs
             if decay_start_epoch <= step_i < self.total_epochs:
                 lambda_ *= (self.total_epochs - step_i) / (self.total_epochs - decay_start_epoch)
+            elif step_i >= self.total_epochs:
+                lambda_ *= 0.
+        elif self.decay_type == 'cosine':
+            assert self.total_epochs is not None
+            decay_start_epoch = self.warm_up_start_epoch + self.warm_up_epochs
+            if decay_start_epoch <= step_i < self.total_epochs:
+                lambda_ *= 0.5 * (1 + math.cos(math.pi * (step_i - decay_start_epoch) / (self.total_epochs - decay_start_epoch)))
             elif step_i >= self.total_epochs:
                 lambda_ *= 0.
         else:
