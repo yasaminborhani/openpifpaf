@@ -14,15 +14,22 @@ def adapt_convnextv2(backbone):
     return backbone
 
 
-def convnextv2(config=None, pretrained=True):
+def freeze_backbone(backbone):
+    """Freeze the backbone parameters."""
+    for param in backbone.parameters():
+        param.requires_grad = False
+
+def convnextv2(config=None, pretrained=True, freeze=False):
     backbone = mmpretrain.models.build_backbone(config)
     if pretrained:
         backbone.init_weights()
     backbone = adapt_convnextv2(backbone)
+    if freeze:
+        freeze_backbone(backbone)
     return backbone
 
 
-def convnextv2base(pretrained=True):
+def convnextv2base(pretrained=True, freeze=True):
     convnextv2_base_config = dict(
         type='mmpretrain.ConvNeXt',
         arch='base',
@@ -39,4 +46,4 @@ def convnextv2base(pretrained=True):
         ),
     )
     out_features = 1024
-    return convnextv2(config=convnextv2_base_config, pretrained=pretrained), out_features
+    return convnextv2(config=convnextv2_base_config, pretrained=pretrained, freeze=freeze), out_features
