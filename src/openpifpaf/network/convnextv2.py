@@ -29,7 +29,7 @@ def convnextv2(config=None, pretrained=True, freeze=False):
     return backbone
 
 
-def convnextv2base(pretrained=True, freeze=True):
+def convnextv2base(pretrained=True, freeze=False):
     convnextv2_base_config = dict(
         type='mmpretrain.ConvNeXt',
         arch='base',

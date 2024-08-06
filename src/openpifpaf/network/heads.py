@@ -4,6 +4,8 @@ import argparse
 import functools
 import logging
 import math
+from . import swin_transformer
+from .swin_transformer import SwinTransformerBlock
 
 import torch
 
@@ -142,6 +144,8 @@ class CompositeField3(HeadNetwork):
         self.conv = torch.nn.Conv2d(in_features, out_features * (meta.upsample_stride ** 2),
                                     kernel_size, padding=padding, dilation=dilation)
 
+        self.att = SwinTransformerBlock(dim=in_features, num_heads=4)
+
         # upsample
         assert meta.upsample_stride >= 1
         self.upsample_op = None
@@ -167,7 +171,15 @@ class CompositeField3(HeadNetwork):
     def sparse_task_parameters(self):
         return [self.conv.weight]
 
-    def forward(self, x):  # pylint: disable=arguments-differ
+    def forward(self, x):
+        # pylint: disable=arguments-differ
+        B, C, H, W = x.shape
+        self.att.H = H
+        self.att.W = W
+        x = x.permute(0, 2, 3, 1).contiguous()  # (B, H, W, C)
+        x = x.view(B, H * W, C)  # (B, H * W, C)
+        x = self.att(x, None)
+        x = x.view(B, H, W, C).permute(0, 3, 1, 2)
         x = self.dropout(x)
         x = self.conv(x)
         # upscale
@@ -282,7 +294,8 @@ class CompositeField4(HeadNetwork):
                   kernel_size, padding, dilation)
 
         self.dropout = torch.nn.Dropout2d(p=self.dropout_p)
-
+        # swin attention
+        self.att = SwinTransformerBlock(dim=in_features, num_heads=4)
         # convolution
         self.n_components = 1 + meta.n_confidences + meta.n_vectors * 2 + meta.n_scales
         self.conv = torch.nn.Conv2d(
@@ -316,6 +329,13 @@ class CompositeField4(HeadNetwork):
         return [self.conv.weight]
 
     def forward(self, x):  # pylint: disable=arguments-differ
+        B, C, H, W = x.shape
+        self.att.H = H
+        self.att.W = W
+        x = x.permute(0, 2, 3, 1).contiguous()  # (B, H, W, C)
+        x = x.view(B, H * W, C)  # (B, H * W, C)
+        x = self.att(x, None)
+        x = x.view(B, H, W, C).permute(0, 3, 1, 2)
         x = self.dropout(x)
         x = self.conv(x)
         # upscale
