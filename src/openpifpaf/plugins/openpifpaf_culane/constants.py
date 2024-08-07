@@ -12,10 +12,10 @@ import openpifpaf
 
 
 #Images in openlane dataset seem to have standard format
-IMAGE_WIDTH = 1920
-IMAGE_HEIGHT = 1280
+IMAGE_WIDTH = 1640
+IMAGE_HEIGHT = 590
 
-LANE_KEYPOINTS_48 = [
+LANE_KEYPOINTS_24 = [
     '1',       # 1 the nearest
     '2',       # 2 
     '3',       # 3
@@ -40,54 +40,53 @@ LANE_KEYPOINTS_48 = [
     '22',      # 22
     '23',      # 23
     '24',      # 24
-    '25',      # 25
-    '26',      # 26
-    '27',      # 27
-    '28',      # 28
-    '29',      # 29
-    '30',      # 30
-    '31',      # 31
-    '32',      # 32
-    '33',      # 33
-    '34',      # 34
-    '35',      # 35
-    '36',      # 36
-    '37',      # 37
-    '38',      # 38
-    '39',      # 39
-    '40',      # 40
-    '41',      # 41
-    '42',      # 42
-    '43',      # 43
-    '44',      # 44
-    '45',      # 45
-    '46',      # 46
-    '47',      # 47
-    '48',      # 48
 ]
 
-LANE_SKELETON_48 = [
+LANE_SKELETON_24 = [
   (1,2),(2,3),(3,4),(4,5),(5,6),(6,7),(7,8),(8,9),(9,10),
   (10,11),(11,12),(12,13),(13,14),(14,15),(15,16),(16,17),
-  (17,18),(18,19),(19,20),(20,21),(21,22),(22,23),(23,24),
-    (25,26),(26,27),(27,28),(28,29),(29,30),(30,31),(31,32),
-    (32,33),(33,34),(34,35),(35,36),(36,37),(37,38),(38,39),
-    (39,40),(40,41),(41,42),(42,43),(43,44),(44,45),(45,46),
-    (46,47),(47,48)
+  (17,18),(18,19),(19,20),(20,21),(21,22),(22,23),(23,24)
 ]
 
 
-LANE_SIGMAS_48 = [0.05] * len(LANE_KEYPOINTS_48)  
+# LANE_SIGMAS_24 = [
+#     0.072, #1
+#     0.071, #2
+#     0.070, #3
+#     0.069, #4
+#     0.068, #5
+#     0.067, #6
+#     0.066, #7
+#     0.065, #8
+#     0.064, #9
+#     0.063, #10
+#     0.062, #11
+#     0.061, #12
+#     0.060, #13
+#     0.059, #14
+#     0.058, #15
+#     0.057, #16
+#     0.056, #17
+#     0.055, #18
+#     0.054, #19
+#     0.053, #20
+#     0.052, #21
+#     0.051, #22
+#     0.050, #23
+#     0.049, #24
 
-split, error = divmod(len(LANE_KEYPOINTS_48), 4)
-LANE_SCORE_WEIGHTS_48 = [10.0] * split + [3.0] * split + \
+# ]  
+LANE_SIGMAS_24 = [0.05] * len(LANE_KEYPOINTS_24)  
+
+split, error = divmod(len(LANE_KEYPOINTS_24), 4)
+LANE_SCORE_WEIGHTS_24 = [10.0] * split + [3.0] * split + \
     [1.0] * split + [0.1] * split + [0.1] * error  
 
-assert len(LANE_SCORE_WEIGHTS_48) == len(LANE_KEYPOINTS_48)
+assert len(LANE_SCORE_WEIGHTS_24) == len(LANE_KEYPOINTS_24)
 
 
 
-LANE_CATEGORIES_48 = ['unkown',             # 0
+LANE_CATEGORIES_24 = ['unkown',             # 0
                         'white-dash',         # 1
                         'white-solid',        # 2
                         'double-white-dash',  # 3
@@ -131,17 +130,10 @@ LANE_POSE_STRAIGHT_24 = np.array([
     [-3.0, 0.0, 1.0],  # 24
     
 ])
-# interpolate LANE_POSE_STRAIGHT_24 to LANE_POSE_STRAIGHT_48
-LANE_POSE_STRAIGHT_48 = np.zeros((48, 3))
-LANE_POSE_STRAIGHT_48[0::2] = LANE_POSE_STRAIGHT_24
-average = LANE_POSE_STRAIGHT_24[:-1] * 0.5 + LANE_POSE_STRAIGHT_24[1:] * 0.5
-average = np.vstack((average, LANE_POSE_STRAIGHT_24[-1]))
-LANE_POSE_STRAIGHT_48[1::2] = average
-
 
 def get_constants():
-  return [LANE_KEYPOINTS_48, LANE_SKELETON_48, LANE_SIGMAS_48,
-                LANE_POSE_STRAIGHT_48, LANE_CATEGORIES_48, LANE_SCORE_WEIGHTS_48]
+  return [LANE_KEYPOINTS_24, LANE_SKELETON_24, LANE_SIGMAS_24,
+                LANE_POSE_STRAIGHT_24, LANE_CATEGORIES_24, LANE_SCORE_WEIGHTS_24]
 
 def draw_ann(ann, *, keypoint_painter, filename=None, margin=0.5, aspect=None, **kwargs):
     from openpifpaf import show  # pylint: disable=import-outside-toplevel
@@ -222,8 +214,8 @@ def plot3d_red(ax_2D, p3d, skeleton):
 
 def print_associations():
     print("\nAssociations of the lane skeleton with 24 keypoints")
-    for j1, j2 in LANE_SKELETON_48:
-        print(LANE_KEYPOINTS_48[j1 - 1], '-', LANE_KEYPOINTS_48[j2 - 1])
+    for j1, j2 in LANE_SKELETON_24:
+        print(LANE_KEYPOINTS_24[j1 - 1], '-', LANE_KEYPOINTS_24[j2 - 1])
 
 
 def main():

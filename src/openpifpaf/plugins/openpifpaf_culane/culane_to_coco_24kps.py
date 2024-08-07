@@ -8,6 +8,7 @@ import json
 import argparse
 
 import numpy as np
+import re
 
 # Packages for data processing, crowd annotations and histograms
 try:
@@ -17,7 +18,7 @@ except ModuleNotFoundError as err:
         raise err
     plt = None
 
-from .constants_48kps import LANE_KEYPOINTS_48, LANE_SKELETON_48, IMAGE_WIDTH, IMAGE_HEIGHT
+from .constants import LANE_KEYPOINTS_24, LANE_SKELETON_24, IMAGE_WIDTH, IMAGE_HEIGHT
 
 def cli():
     parser = argparse.ArgumentParser(description=__doc__,
@@ -29,7 +30,7 @@ def cli():
                         help='dataset annotations directory')
     parser.add_argument('--dir_images', default='../images',
                         help='dataset images directory')
-    parser.add_argument('--dir_out', default='./data_openlane',
+    parser.add_argument('--dir_out', default='./data_culane',
                         help='where to save annotations and files')
     parser.add_argument('--sample', action='store_true',
                         help='Whether to only process 50%% images')
@@ -38,10 +39,10 @@ def cli():
     args = parser.parse_args()
     return args
 
-class OpenLaneToCoco:
+class CuLaneToCoco:
 
     # Prepare json format
-    map_sk = LANE_SKELETON_48
+    map_sk = LANE_SKELETON_24
 
     sample = False
     single_sample = False
@@ -60,30 +61,40 @@ class OpenLaneToCoco:
 
         os.makedirs(self.dir_out_ann, exist_ok=True)
        
-        self.json_file_48 = {}
+        self.json_file_24 = {}
 
         training_files = []
         training_dir = os.path.join(dir_dataset, "training")
-        for dir, _, files in os.walk(training_dir):
-            for file in files:
-                relative_file = os.path.join(dir, file)
-                training_files.append(relative_file)
+        for segments in os.listdir(training_dir):
+            seg_path = os.path.join(training_dir, segments)
+            for dir, _, files in os.walk(seg_path):
+                for file in files:
+                    if not file.endswith('.json'):
+                        continue
+                    relative_file = os.path.join(segments,dir, file)
+                    training_files.append(relative_file)
+        print("training files: ", training_files[:10])
 
         validation_files = []
         validation_dir = os.path.join(dir_dataset, "validation")
-        for dir, _, files in os.walk(validation_dir):
-            for file in files:
-                relative_file = os.path.join(dir, file)
-                validation_files.append(relative_file)
+        for segments in os.listdir(validation_dir):
+            seg_path = os.path.join(validation_dir, segments)
+            for dir, _, files in os.walk(seg_path):
+                for file in files:
+                    if not file.endswith('.json'):
+                        continue
+                    relative_file = os.path.join(segments,dir, file)
+                    validation_files.append(relative_file)
+        print("validation files: ", validation_files[:10])
 
         # Load train val split
         self.splits = {
             "training": training_files,
             "validation": validation_files,
         }
-    def downsample(self, u, v, target_length=48):
+    def downsample(self, u, v, target_length=24):
         """
-        Downsample the number of keypoints to 48, keeping the first and last keypoints, while maintaining equal distance between keypoints 
+        Downsample the number of keypoints to 24, keeping the first and last keypoints, while maintaining equal distance between keypoints 
         :param u: x coordinates of keypoints
         :param v: y coordinates of keypoints
         :param target_length: number of keypoints to downsample to
@@ -127,20 +138,38 @@ class OpenLaneToCoco:
 
             if self.single_sample:
                 ann_paths = self.splits['training'][:1]
+                print(ann_paths)
 
             #Iterate through json files and process into COCO style
             for ann_path in ann_paths:
+            
                 f = open(ann_path) #o
-                openlane_data = json.load(f) 
+                culane_data = json.load(f) 
                 
                 """
                 Update image field in json file
                 """
-                relative_file_path = openlane_data['file_path']
-                file_path = os.path.join(self.dir_images, relative_file_path)
+                relative_file_path = culane_data['file_path']
+                relative_file_path = relative_file_path.replace(".lines", "")
+                start_index = relative_file_path.find("driver")
+                relative_file_path = relative_file_path[start_index:]
+                # determine training or val from ann_path
+                if "training" in ann_path:
+                    file_path = os.path.join(self.dir_images, "training", relative_file_path)
+                else:
+                    file_path = os.path.join(self.dir_images, "validation",relative_file_path)
+               
                 img_name = os.path.splitext(file_path)[0]   # Returns tuple (file_name, ext)
+                print("img_name: ", img_name)
+                pattern = r".*/(\d+)_\d+\.MP4/(\d+)$"
+                match = re.search(pattern, img_name)
+                
                 #each image has a unique image_id and each image can have multiple annotations
-                img_id = int(img_name.split("/")[-1])
+                
+                if match:
+                    number_before_mp4 = match.group(1)
+                    final_number = match.group(2)
+                    img_id = int(number_before_mp4 + final_number)
                 
                 if not os.path.exists(file_path):
                     continue
@@ -157,11 +186,11 @@ class OpenLaneToCoco:
                     'date_captured': "unknown",
                     'width': IMAGE_WIDTH,
                     'height': IMAGE_HEIGHT}
-                self.json_file_48["images"].append(dict_ann)
+                self.json_file_24["images"].append(dict_ann)
 
         
                 #extract keypoints, visibility, category, and load into COCO annotations field
-                lane_lines = openlane_data['lane_lines']
+                lane_lines = culane_data['lane_lines']
 
                 """
                 Update annotation field in json file for each lane in image
@@ -172,12 +201,12 @@ class OpenLaneToCoco:
 
                     #note kp_coords format is [[u],[v]]
                     num_kp = len(kp_coords[0])
-                    # if num_kp < 48:
+                    # if num_kp < 24:
                     #     continue
                     
-                    # #downsample to 48 kps
-                    # kp_coords = kp_coords[:,::num_kp//48]
-                    # #make sure to keep only the first  keypoints [u,v,1] in kps
+                    # #downsample to 24 kps
+                    # kp_coords = kp_coords[:,::num_kp//24]
+                    # #make sure to keep only the first 24 keypoints [u,v,1] in kps
                     # kp_coords = kp_coords[:,:24]
                     # #update num_kp to the new number of keypoints, it should be 24
                     # num_kp = int(len(kp_coords[0]))
@@ -216,7 +245,7 @@ class OpenLaneToCoco:
                         'keypoints': kps,
                         'segmentation': []}
 
-                    self.json_file_48["annotations"].append(coco_ann)
+                    self.json_file_24["annotations"].append(coco_ann)
                     lane_counter += 1
 
         
@@ -226,7 +255,7 @@ class OpenLaneToCoco:
     
 
     def save_json_files(self, phase):
-        name = 'openlane_keypoints_'
+        name = 'culane_keypoints_'
         if self.sample:
             name = name + 'sample_10'
         elif self.single_sample:
@@ -234,7 +263,7 @@ class OpenLaneToCoco:
 
         path_json = os.path.join(self.dir_out_ann, name + phase + '.json')
         with open(path_json, 'w') as outfile:
-            json.dump(self.json_file_48, outfile)
+            json.dump(self.json_file_24, outfile)
        
 
     def initiate_json(self):
@@ -242,16 +271,16 @@ class OpenLaneToCoco:
         Initiate Json for training and val phase
         """
         
-        lane_kps = LANE_KEYPOINTS_48
+        lane_kps = LANE_KEYPOINTS_24
         
-        self.json_file_48["info"] = dict(url="https://github.com/openpifpaf/openpifpaf",
+        self.json_file_24["info"] = dict(url="https://github.com/openpifpaf/openpifpaf",
                                   date_created=time.strftime("%a, %d %b %Y %H:%M:%S +0000",
                                                              time.localtime()),
-                                  description=("Conversion of openlane dataset into MS-COCO"
+                                  description=("Conversion of culane dataset into MS-COCO"
                                                " format with 2D keypoints"))
-        self.json_file_48["categories"] = [dict(name='unknown',
+        self.json_file_24["categories"] = [dict(name='unknown',
                                          id=0,
-                                         skeleton = LANE_SKELETON_48,
+                                         skeleton = LANE_SKELETON_24,
                                          supercategory='lane',
                                          keypoints=[]), 
                                          dict(name='white-dash',
@@ -314,8 +343,8 @@ class OpenLaneToCoco:
                                          id=21,
                                          supercategory='lane',
                                          keypoints=[])]
-        self.json_file_48["images"] = []
-        self.json_file_48["annotations"] = []
+        self.json_file_24["images"] = []
+        self.json_file_24["annotations"] = []
 
 
         
@@ -323,10 +352,10 @@ def main():
     args = cli()
 
     # configure
-    OpenLaneToCoco.sample = args.sample
-    OpenLaneToCoco.single_sample = args.single_sample
+    CuLaneToCoco.sample = args.sample
+    CuLaneToCoco.single_sample = args.single_sample
 
-    apollo_coco = OpenLaneToCoco(args.dir_data, args.dir_images, args.dir_out)
+    apollo_coco = CuLaneToCoco(args.dir_data, args.dir_images, args.dir_out)
     apollo_coco.process()
 
 if __name__ == "__main__":
