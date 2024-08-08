@@ -161,11 +161,13 @@ class CompositeField3(HeadNetwork):
         group.add_argument('--cf3-no-inplace-ops', dest='cf3_inplace_ops',
                            default=True, action='store_false',
                            help='alternative graph without inplace ops')
+        group.add_argument('--cf3-attention-swin-head', default=False, help='adding swin attention block to heads')
 
     @classmethod
     def configure(cls, args: argparse.Namespace):
         cls.dropout_p = args.cf3_dropout
         cls.inplace_ops = args.cf3_inplace_ops
+        cls.attention_swin_head = args.cf3_attention_swin_head
 
     @property
     def sparse_task_parameters(self):
@@ -173,13 +175,14 @@ class CompositeField3(HeadNetwork):
 
     def forward(self, x):
         # pylint: disable=arguments-differ
-        B, C, H, W = x.shape
-        self.att.H = H
-        self.att.W = W
-        x = x.permute(0, 2, 3, 1).contiguous()  # (B, H, W, C)
-        x = x.view(B, H * W, C)  # (B, H * W, C)
-        x = self.att(x, None)
-        x = x.view(B, H, W, C).permute(0, 3, 1, 2)
+        if self.attention_swin_head:
+            B, C, H, W = x.shape
+            self.att.H = H
+            self.att.W = W
+            x = x.permute(0, 2, 3, 1).contiguous()  # (B, H, W, C)
+            x = x.view(B, H * W, C)  # (B, H * W, C)
+            x = self.att(x, None)
+            x = x.view(B, H, W, C).permute(0, 3, 1, 2)
         x = self.dropout(x)
         x = self.conv(x)
         # upscale
@@ -318,24 +321,27 @@ class CompositeField4(HeadNetwork):
         group.add_argument('--cf4-no-inplace-ops', dest='cf4_inplace_ops',
                            default=True, action='store_false',
                            help='alternative graph without inplace ops')
+        group.add_argument('--cf4-attention-swin-head', default=False, help='adding swin attention block to heads')
 
     @classmethod
     def configure(cls, args: argparse.Namespace):
         cls.dropout_p = args.cf4_dropout
         cls.inplace_ops = args.cf4_inplace_ops
+        cls.attention_swin_head = args.cf4_attention_swin_head
 
     @property
     def sparse_task_parameters(self):
         return [self.conv.weight]
 
     def forward(self, x):  # pylint: disable=arguments-differ
-        B, C, H, W = x.shape
-        self.att.H = H
-        self.att.W = W
-        x = x.permute(0, 2, 3, 1).contiguous()  # (B, H, W, C)
-        x = x.view(B, H * W, C)  # (B, H * W, C)
-        x = self.att(x, None)
-        x = x.view(B, H, W, C).permute(0, 3, 1, 2)
+        if self.attention_swin_head:
+            B, C, H, W = x.shape
+            self.att.H = H
+            self.att.W = W
+            x = x.permute(0, 2, 3, 1).contiguous()  # (B, H, W, C)
+            x = x.view(B, H * W, C)  # (B, H * W, C)
+            x = self.att(x, None)
+            x = x.view(B, H, W, C).permute(0, 3, 1, 2)
         x = self.dropout(x)
         x = self.conv(x)
         # upscale
