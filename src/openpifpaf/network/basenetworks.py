@@ -380,6 +380,8 @@ class ShuffleNetV2K(BaseNetwork):
                                       default=False, action='store_true')
         layer_norm_group.add_argument('--shufflenetv2k-group-norm',
                                       default=False, action='store_true')
+        layer_norm_group.add_argument('--shufflenetv2k-layer-norm',
+                                      default=False, action='store_true')
 
         non_linearity_group = group.add_mutually_exclusive_group()
         non_linearity_group.add_argument('--shufflenetv2k-leaky-relu',
@@ -394,6 +396,8 @@ class ShuffleNetV2K(BaseNetwork):
         cls.conv5_as_stage = args.shufflenetv2k_conv5_as_stage
 
         # layer norms
+        if args.shufflenetv2k_layer_norm:
+            cls.layer_norm = lambda x: torch.nn.LayerNorm(x)
         if args.shufflenetv2k_instance_norm:
             cls.layer_norm = lambda x: torch.nn.InstanceNorm2d(
                 x, affine=True, track_running_stats=True)
