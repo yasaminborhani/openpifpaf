@@ -143,8 +143,9 @@ class CompositeField3(HeadNetwork):
         out_features = meta.n_fields * (meta.n_confidences + meta.n_vectors * 3 + meta.n_scales)
         self.conv = torch.nn.Conv2d(in_features, out_features * (meta.upsample_stride ** 2),
                                     kernel_size, padding=padding, dilation=dilation)
-
-        self.att = SwinTransformerBlock(dim=in_features, num_heads=4)
+                     
+        if self.attention_swin_head:
+            self.att = SwinTransformerBlock(dim=in_features, num_heads=4)
 
         # upsample
         assert meta.upsample_stride >= 1
@@ -298,7 +299,8 @@ class CompositeField4(HeadNetwork):
 
         self.dropout = torch.nn.Dropout2d(p=self.dropout_p)
         # swin attention
-        self.att = SwinTransformerBlock(dim=in_features, num_heads=4)
+        if self.attention_swin_head:
+            self.att = SwinTransformerBlock(dim=in_features, num_heads=4)
         # convolution
         self.n_components = 1 + meta.n_confidences + meta.n_vectors * 2 + meta.n_scales
         self.conv = torch.nn.Conv2d(
