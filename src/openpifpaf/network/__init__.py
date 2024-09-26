@@ -9,6 +9,7 @@ from .tracking_base import TrackingBase
 from .tracking_heads import TBaseSingleImage, Tcaf
 from .trainer import Trainer
 from . import losses
+import torch
 
 
 def convert_instance_norm(module, affine=False):
