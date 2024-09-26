@@ -117,6 +117,8 @@ def cli():
                         help='[experimental] in ddp, to not use syncbatchnorm')
     parser.add_argument('--resume-training', default=None,
                         help='resume training from optimization checkpoint')
+    parser.add_argument('--layernorm', default=False, action='store_true',
+                        help='Use LayerNorm instead of BatchNorm')
 
     logger.cli(parser)
     network.Factory.cli(parser)
@@ -171,6 +173,11 @@ def main():
     datamodule = datasets.factory(args.dataset)
 
     net_cpu, start_epoch = network.Factory().factory(head_metas=datamodule.head_metas)
+    
+    if args.layernorm:
+        LOG.info('convert all batchnorms to layernorms')
+        net_cpu = network.MyLayerNorm.convert_mylayernorm(net_cpu)
+        
     loss = network.losses.Factory().factory(datamodule.head_metas)
 
     checkpoint_shell = None
