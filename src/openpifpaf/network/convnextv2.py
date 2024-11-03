@@ -53,7 +53,7 @@ def convnextv2base(pretrained=True, freeze=False):
     convnextv2_base_config = dict(
         type='mmpretrain.ConvNeXt',
         arch='base',
-        out_indices=[1, 2, 3],  # Output multiple stages for FPN input
+        out_indices=[0, 1, 2, 3],  # Output multiple stages for FPN input
         drop_path_rate=0.4,
         layer_scale_init_value=0.,
         gap_before_final_norm=False,
@@ -65,5 +65,5 @@ def convnextv2base(pretrained=True, freeze=False):
             prefix='backbone.',
         ),
     )
-    out_channels = [256, 512, 1024]  # Adjust as per ConvNeXt's outputs
+    out_channels = [128, 256, 512, 1024]  # Adjust as per ConvNeXt's outputs
     return convnextv2(config=convnextv2_base_config, pretrained=pretrained, freeze=freeze), out_channels
