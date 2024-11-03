@@ -806,7 +806,7 @@ class ConvNeXtV2(BaseNetwork):
     pretrained = True
     use_fpn = False
     fpn_level = 3
-    fpn_out_channels = None
+    fpn_out_channels = 1024
 
     def __init__(self, name, convnextv2_net):
         convnextv2_backbone, out_features = convnextv2_net(self.pretrained)
