@@ -804,14 +804,29 @@ class HRFormer(BaseNetwork):
 
 class ConvNeXtV2(BaseNetwork):
     pretrained = True
+    use_fpn = False
+    fpn_level = 3
+    fpn_out_channels = None
 
     def __init__(self, name, convnextv2_net):
         convnextv2_backbone, out_features = convnextv2_net(self.pretrained)
         super().__init__(name, stride=32, out_features=out_features)
         self.backbone = convnextv2_backbone
 
+        self.fpn = None
+        if self.use_fpn:
+            self.fpn = FPN(in_channels=out_features, out_channels=self.fpn_out_channels, self.fpn_level)
+
     def forward(self, x):
-        return self.backbone(x)[0]
+        outs = self.backbone(x)
+
+        if self.fpn is not None:
+            print('FPN is used')
+            x = self.fpn(outs)
+        else:
+            x = outs[-1]
+
+        return x
 
     @classmethod
     def cli(cls, parser: argparse.ArgumentParser):
@@ -821,9 +836,26 @@ class ConvNeXtV2(BaseNetwork):
                            default=True, action='store_false',
                            help='use randomly initialized models')
 
+        group.add_argument('--convnextv2-use-fpn', default=False, action='store_true',
+                           help='adds a FPN after the Swin network '
+                                'to obtain higher res feature maps')
+
+        group.add_argument('--convnextv2-fpn-out-channels',
+                           default=cls.fpn_out_channels, type=int,
+                           help='output channels of the FPN (None to use the '
+                                'default number of channels of the Swin network)')
+
+        group.add_argument('--convnextv2-fpn-level',
+                           default=cls.fpn_level, type=int,
+                           help='FPN pyramid level, must be between 1 '
+                                '(highest resolution) and 4 (lowest resolution)')
+
     @classmethod
     def configure(cls, args: argparse.Namespace):
         cls.pretrained = args.convnextv2_pretrained
+        cls.use_fpn = args.convnextv2_use_fpn
+        cls.fpn_out_channels = args.convnextv2_fpn_out_channels
+        cls.fpn_level = args.convnextv2_fpn_level
 
 
 class CLIPConvNeXt(BaseNetwork):
