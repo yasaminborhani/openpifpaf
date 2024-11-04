@@ -814,8 +814,12 @@ class ConvNeXtV2(BaseNetwork):
             out_features = out_features_backbone[-1]
         else:
             out_features = out_features_backbone
+        stride=32 
+        if self.use_fpn:
+            LOG.debug('swin output FPN level: %d', self.fpn_level)
+            stride //= 2 ** (4 - self.fpn_level)
             
-        super().__init__(name, stride=32, out_features=out_features)
+        super().__init__(name, stride=stride, out_features=out_features)
         self.backbone = convnextv2_backbone
 
         self.fpn = None
