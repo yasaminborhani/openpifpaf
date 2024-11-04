@@ -818,7 +818,7 @@ class ConvNeXtV2(BaseNetwork):
 
         self.fpn = None
         if self.use_fpn:
-            self.fpn = FPN(in_channels=out_features, out_channels=self.fpn_out_channels, self.fpn_level)
+            self.fpn = FPN(in_channels=out_features, out_channels=self.fpn_out_channels, fpn_level=self.fpn_level)
 
     def forward(self, x):
         outs = self.backbone(x)
