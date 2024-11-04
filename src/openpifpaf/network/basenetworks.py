@@ -917,14 +917,15 @@ class CLIPConvNeXt(BaseNetwork):
             self.backbone.visual.trunk.stages[2].register_forward_hook(self.get_feature_maps("stage_2"))
             self.backbone.visual.trunk.stages[3].register_forward_hook(self.get_feature_maps("stage_3"))
 
-    def get_feature_maps(self, name):
-        """Hook to capture feature maps."""
-        def hook(module, input, output):
-            self.feature_maps[name] = output
-        return hook
+    def hook_stage_2(self, module, input, output):
+        """Hook to capture output of stage 2."""
+        self.feature_maps["stage_2"] = output
+
+    def hook_stage_3(self, module, input, output):
+        """Hook to capture output of stage 3."""
+        self.feature_maps["stage_3"] = output
 
     def forward(self, x):
-        # Forward pass through the backbone to get feature maps
         if self.use_fpn:
             # Forward pass through the backbone to get feature maps
             self.backbone.visual.trunk.forward_features(x)
