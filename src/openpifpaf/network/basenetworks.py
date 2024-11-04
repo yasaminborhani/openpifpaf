@@ -947,9 +947,6 @@ class CLIPConvNeXt(BaseNetwork):
         group.add_argument('--clipconvnext-no-pretrain', dest='clipconvnext_pretrained',
                            default=True, action='store_false',
                            help='use randomly initialized models')
-        group.add_argument('--clipconvnext-no-pretrain', dest='convnextv2_pretrained',
-                           default=True, action='store_false',
-                           help='use randomly initialized models')
 
         group.add_argument('--clipconvnext-use-fpn', default=False, action='store_true',
                            help='adds a FPN after the clipconvnext network '
