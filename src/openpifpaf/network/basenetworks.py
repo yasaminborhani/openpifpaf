@@ -830,7 +830,7 @@ class ConvNeXtV2(BaseNetwork):
         outs = self.backbone(x)
 
         if self.fpn is not None:
-            print('FPN is used')
+            # print('FPN is used')
             x = self.fpn(outs)
         else:
             x = outs[-1]
