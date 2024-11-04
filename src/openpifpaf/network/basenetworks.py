@@ -911,7 +911,7 @@ class CLIPConvNeXt(BaseNetwork):
         # Define input channels based on the backbone architecture
         if self.use_fpn:
             self.in_channels = [128, 256, 512, 1024]  # Adjust according to your model's output channels
-            self.fpn = FPN(in_channels=self.in_channels, out_channels=self.fpn_output_channels, fpn_level=3)
+            self.fpn = FPN(in_channels=self.in_channels, out_channels=self.fpn_out_channels, fpn_level=3)
             # Register hooks to capture feature maps from the backbone
             self.feature_maps = {}
             self.backbone.visual.trunk.stages[2].register_forward_hook(self.get_feature_maps("stage_2"))
