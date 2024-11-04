@@ -810,6 +810,9 @@ class ConvNeXtV2(BaseNetwork):
 
     def __init__(self, name, convnextv2_net):
         convnextv2_backbone, out_features = convnextv2_net(self.pretrained)
+        if not self.use_fpn:
+            out_features = out_features[-1]
+            
         super().__init__(name, stride=32, out_features=out_features)
         self.backbone = convnextv2_backbone
 
