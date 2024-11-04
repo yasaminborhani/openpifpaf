@@ -809,16 +809,18 @@ class ConvNeXtV2(BaseNetwork):
     fpn_out_channels = 1024
 
     def __init__(self, name, convnextv2_net):
-        convnextv2_backbone, out_features = convnextv2_net(self.pretrained)
-        if not self.use_fpn:
-            out_features = out_features[-1]
+        convnextv2_backbone, out_features_backbone = convnextv2_net(self.pretrained)
+        if self.use_fpn:
+            out_features = out_features_backbone[-1]
+        else:
+            out_features = out_features_backbone
             
         super().__init__(name, stride=32, out_features=out_features)
         self.backbone = convnextv2_backbone
 
         self.fpn = None
         if self.use_fpn:
-            self.fpn = FPN(in_channels=out_features, out_channels=self.fpn_out_channels, fpn_level=self.fpn_level)
+            self.fpn = FPN(in_channels=out_features_backbone, out_channels=self.fpn_out_channels, fpn_level=self.fpn_level)
 
     def forward(self, x):
         outs = self.backbone(x)
