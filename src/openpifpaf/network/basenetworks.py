@@ -846,13 +846,13 @@ class ConvNeXtV2(BaseNetwork):
                            help='use randomly initialized models')
 
         group.add_argument('--convnextv2-use-fpn', default=False, action='store_true',
-                           help='adds a FPN after the Swin network '
+                           help='adds a FPN after the convnextv2 network '
                                 'to obtain higher res feature maps')
 
         group.add_argument('--convnextv2-fpn-out-channels',
                            default=cls.fpn_out_channels, type=int,
                            help='output channels of the FPN (None to use the '
-                                'default number of channels of the Swin network)')
+                                'default number of channels of the convnextv2 network)')
 
         group.add_argument('--convnextv2-fpn-level',
                            default=cls.fpn_level, type=int,
@@ -867,17 +867,78 @@ class ConvNeXtV2(BaseNetwork):
         cls.fpn_level = args.convnextv2_fpn_level
 
 
+# class CLIPConvNeXt(BaseNetwork):
+#     pretrained = True
+#     unused_parameters = True  # For DDP initialization
+
+#     def __init__(self, name, clipconvnext_net):
+#         clipconvnext_backbone, out_features = clipconvnext_net(self.pretrained)
+#         super().__init__(name, stride=32, out_features=out_features)
+#         self.backbone = clipconvnext_backbone
+
+#     def forward(self, x):
+#         return self.backbone.visual.trunk.forward_features(x)
+
+#     @classmethod
+#     def cli(cls, parser: argparse.ArgumentParser):
+#         group = parser.add_argument_group('CLIPConvNeXt')
+#         assert cls.pretrained
+#         group.add_argument('--clipconvnext-no-pretrain', dest='clipconvnext_pretrained',
+#                            default=True, action='store_false',
+#                            help='use randomly initialized models')
+
+#     @classmethod
+#     def configure(cls, args: argparse.Namespace):
+#         cls.pretrained = args.clipconvnext_pretrained
+
+
 class CLIPConvNeXt(BaseNetwork):
     pretrained = True
     unused_parameters = True  # For DDP initialization
+    use_fpn = False
+    fpn_level = 3
+    fpn_out_channels = 1024
 
     def __init__(self, name, clipconvnext_net):
         clipconvnext_backbone, out_features = clipconvnext_net(self.pretrained)
-        super().__init__(name, stride=32, out_features=out_features)
+        stride=32 
+        if self.use_fpn:
+            LOG.debug('swin output FPN level: %d', self.fpn_level)
+            stride //= 2 ** (4 - self.fpn_level)
+        super().__init__(name, stride=stride, out_features=out_features)
         self.backbone = clipconvnext_backbone
 
+        # Define input channels based on the backbone architecture
+        if self.use_fpn:
+            self.in_channels = [128, 256, 512, 1024]  # Adjust according to your model's output channels
+            self.fpn = FPN(in_channels=self.in_channels, out_channels=self.fpn_output_channels, fpn_level=3)
+            # Register hooks to capture feature maps from the backbone
+            self.feature_maps = {}
+            self.backbone.visual.trunk.stages[2].register_forward_hook(self.get_feature_maps("stage_2"))
+            self.backbone.visual.trunk.stages[3].register_forward_hook(self.get_feature_maps("stage_3"))
+
+    def get_feature_maps(self, name):
+        """Hook to capture feature maps."""
+        def hook(module, input, output):
+            self.feature_maps[name] = output
+        return hook
+
     def forward(self, x):
-        return self.backbone.visual.trunk.forward_features(x)
+        # Forward pass through the backbone to get feature maps
+        if self.use_fpn:
+            # Forward pass through the backbone to get feature maps
+            self.backbone.visual.trunk.forward_features(x)
+
+            # Retrieve the captured feature maps
+            stage_3_output = self.feature_maps["stage_2"]
+            stage_4_output = self.feature_maps["stage_3"]
+
+            # Pass the feature maps through the FPN
+            fpn_output = self.fpn([stage_3_output, stage_4_output])
+            return fpn_output  # Return the output of the FPN
+        else:
+            # Return the output of the backbone without using FPN
+            return self.backbone.visual.trunk.forward_features(x)
 
     @classmethod
     def cli(cls, parser: argparse.ArgumentParser):
@@ -886,7 +947,28 @@ class CLIPConvNeXt(BaseNetwork):
         group.add_argument('--clipconvnext-no-pretrain', dest='clipconvnext_pretrained',
                            default=True, action='store_false',
                            help='use randomly initialized models')
+        group.add_argument('--clipconvnext-no-pretrain', dest='convnextv2_pretrained',
+                           default=True, action='store_false',
+                           help='use randomly initialized models')
+
+        group.add_argument('--clipconvnext-use-fpn', default=False, action='store_true',
+                           help='adds a FPN after the clipconvnext network '
+                                'to obtain higher res feature maps')
+
+        group.add_argument('--clipconvnext-fpn-out-channels',
+                           default=cls.fpn_out_channels, type=int,
+                           help='output channels of the FPN (None to use the '
+                                'default number of channels of the clipconvnext network)')
+
+        group.add_argument('--clipconvnext-fpn-level',
+                           default=cls.fpn_level, type=int,
+                           help='FPN pyramid level, must be between 1 '
+                                '(highest resolution) and 4 (lowest resolution)')
 
     @classmethod
     def configure(cls, args: argparse.Namespace):
         cls.pretrained = args.clipconvnext_pretrained
+        cls.use_fpn = args.clipconvnext_use_fpn
+        cls.fpn_out_channels = args.clipconvnext_fpn_out_channels
+        cls.fpn_level = args.clipconvnext_fpn_level
+
