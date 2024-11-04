@@ -901,7 +901,7 @@ class CLIPConvNeXt(BaseNetwork):
 
     def __init__(self, name, clipconvnext_net):
         clipconvnext_backbone, out_features = clipconvnext_net(self.pretrained)
-        stride=32 
+        stride = 32 
         if self.use_fpn:
             LOG.debug('swin output FPN level: %d', self.fpn_level)
             stride //= 2 ** (4 - self.fpn_level)
@@ -914,8 +914,9 @@ class CLIPConvNeXt(BaseNetwork):
             self.fpn = FPN(in_channels=self.in_channels, out_channels=self.fpn_out_channels, fpn_level=3)
             # Register hooks to capture feature maps from the backbone
             self.feature_maps = {}
-            self.backbone.visual.trunk.stages[2].register_forward_hook(self.get_feature_maps("stage_2"))
-            self.backbone.visual.trunk.stages[3].register_forward_hook(self.get_feature_maps("stage_3"))
+            # Registering the actual hook methods directly
+            self.backbone.visual.trunk.stages[2].register_forward_hook(self.hook_stage_2)
+            self.backbone.visual.trunk.stages[3].register_forward_hook(self.hook_stage_3)
 
     def hook_stage_2(self, module, input, output):
         """Hook to capture output of stage 2."""
@@ -969,4 +970,5 @@ class CLIPConvNeXt(BaseNetwork):
         cls.use_fpn = args.clipconvnext_use_fpn
         cls.fpn_out_channels = args.clipconvnext_fpn_out_channels
         cls.fpn_level = args.clipconvnext_fpn_level
+
 
