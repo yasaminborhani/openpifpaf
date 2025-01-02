@@ -1,13 +1,13 @@
 import openpifpaf
 
 # from .cocodet import CocoDet
-from .cocobicyclekp.py import CocoBicycleKp
+from . import cocobicyclekp
 # from .dataset import CocoDataset
 
 
 def register():
     # openpifpaf.DATAMODULES['cocodet'] = CocoDet
-    openpifpaf.DATAMODULES['cocobicyclekp'] = CocoBicycleKp
+    openpifpaf.DATAMODULES['cocobicyclekp'] = cocobicyclekp.CocoBicycleKp
 
     # # human pose estimation
     # openpifpaf.CHECKPOINT_URLS['mobilenetv2'] = (
