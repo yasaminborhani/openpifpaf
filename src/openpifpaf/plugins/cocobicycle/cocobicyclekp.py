@@ -4,7 +4,7 @@ import torch
 
 import openpifpaf
 
-from .dataset import CocoDataset
+from openpifpaf.plugins.coco import CocoDataset as CocoLoader
 from .constants import (
     COCO_CATEGORIES,
     COCO_BICYCLE_KEYPOINTS,
@@ -72,7 +72,6 @@ class CocoBicycleKp(openpifpaf.datasets.DataModule, openpifpaf.Configurable):
 
         cif.upsample_stride = self.upsample_stride
         caf.upsample_stride  = self.upsample_stride
-        dcaf.upsample_stride = self.upsample_stride
         self.head_metas =  [cif, caf]
 
     @classmethod
@@ -207,7 +206,7 @@ class CocoBicycleKp(openpifpaf.datasets.DataModule, openpifpaf.Configurable):
         return openpifpaf.transforms.Compose([
             openpifpaf.transforms.NormalizeAnnotations(),
             openpifpaf.transforms.RandomApply(
-                openpifpaf.transforms.HFlip(COCO_KEYPOINTS, HFLIP), 0.5),
+                openpifpaf.transforms.HFlip(COCO_BICYCLE_KEYPOINTS, HFLIP), 0.5),
             rescale_t,
             openpifpaf.transforms.RandomApply(
                 openpifpaf.transforms.Blur(), self.blur),
@@ -223,7 +222,7 @@ class CocoBicycleKp(openpifpaf.datasets.DataModule, openpifpaf.Configurable):
         ])
 
     def train_loader(self):
-        train_data = CocoDataset(
+        train_data = CocoLoader(
             image_dir=self.train_image_dir,
             ann_file=self.train_annotations,
             preprocess=self._preprocess(),
@@ -237,7 +236,7 @@ class CocoBicycleKp(openpifpaf.datasets.DataModule, openpifpaf.Configurable):
             collate_fn=openpifpaf.datasets.collate_images_targets_meta)
 
     def val_loader(self):
-        val_data = CocoDataset(
+        val_data = CocoLoader(
             image_dir=self.val_image_dir,
             ann_file=self.val_annotations,
             preprocess=self._preprocess(),
@@ -301,7 +300,7 @@ class CocoBicycleKp(openpifpaf.datasets.DataModule, openpifpaf.Configurable):
         ])
 
     def eval_loader(self):
-        eval_data = CocoDataset(
+        eval_data = CocoLoader(
             image_dir=self.eval_image_dir,
             ann_file=self.eval_annotations,
             preprocess=self._eval_preprocess(),
