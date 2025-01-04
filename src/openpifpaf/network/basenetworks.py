@@ -245,9 +245,174 @@ class InvertedResidualK(torch.nn.Module):
         return out
 
 
+# class ShuffleNetV2K(BaseNetwork):
+#     """Based on torchvision.models.ShuffleNetV2 where
+#     the kernel size in stages 2,3,4 is 5 instead of 3."""
+#     input_conv2_stride = 0
+#     input_conv2_outchannels = None
+#     layer_norm = None
+#     stage4_dilation = 1
+#     kernel_width = 5
+#     conv5_as_stage = False
+#     non_linearity = None
+
+#     def __init__(self, name, stages_repeats, stages_out_channels):
+#         layer_norm = ShuffleNetV2K.layer_norm
+#         if layer_norm is None:
+#             layer_norm = torch.nn.BatchNorm2d
+#         non_linearity = ShuffleNetV2K.non_linearity
+#         if non_linearity is None:
+#             non_linearity = lambda: torch.nn.ReLU(inplace=True)
+
+#         if len(stages_repeats) != 3:
+#             raise ValueError('expected stages_repeats as list of 3 positive ints')
+#         if len(stages_out_channels) != 5:
+#             raise ValueError('expected stages_out_channels as list of 5 positive ints')
+#         _stage_out_channels = stages_out_channels
+
+#         stride = 16  # in the default configuration
+#         input_modules = []
+#         input_channels = 3
+#         output_channels = _stage_out_channels[0]
+#         conv1 = torch.nn.Sequential(
+#             torch.nn.Conv2d(input_channels, output_channels, 3, 2, 1, bias=False),
+#             layer_norm(output_channels),
+#             non_linearity(),
+#         )
+#         input_modules.append(conv1)
+#         input_channels = output_channels
+
+#         # optional use a conv in place of the max pool
+#         if self.input_conv2_stride:
+#             output_channels = self.input_conv2_outchannels or input_channels
+#             conv2 = torch.nn.Sequential(
+#                 torch.nn.Conv2d(input_channels, output_channels, 3, 2, 1, bias=False),
+#                 layer_norm(output_channels),
+#                 non_linearity(),
+#             )
+#             input_modules.append(conv2)
+#             stride *= 2
+#             input_channels = output_channels
+#             LOG.debug('replaced max pool with [3x3 conv, bn, relu]')
+
+#         stages = []
+#         for repeats, output_channels, dilation in zip(
+#                 stages_repeats, _stage_out_channels[1:], [1, 1, self.stage4_dilation]):
+#             stage_stride = 2 if dilation == 1 else 1
+#             stride = int(stride * stage_stride / 2)
+#             seq = [InvertedResidualK(input_channels, output_channels, True,
+#                                      kernel_size=self.kernel_width,
+#                                      layer_norm=layer_norm,
+#                                      non_linearity=non_linearity,
+#                                      dilation=dilation,
+#                                      stride=stage_stride)]
+#             for _ in range(repeats - 1):
+#                 seq.append(InvertedResidualK(output_channels, output_channels, False,
+#                                              kernel_size=self.kernel_width,
+#                                              layer_norm=layer_norm,
+#                                              non_linearity=non_linearity,
+#                                              dilation=dilation))
+#             stages.append(torch.nn.Sequential(*seq))
+#             input_channels = output_channels
+
+#         output_channels = _stage_out_channels[-1]
+#         if self.conv5_as_stage:
+#             # Two stages are about the same number of parameters as one
+#             # convolution.
+#             # Conv: 1392*1392
+#             # Two Stages: 4 * 696*696 + 2 * 5^2*696
+#             use_first_in_stage = input_channels != output_channels
+#             conv5 = torch.nn.Sequential(
+#                 InvertedResidualK(input_channels, output_channels, use_first_in_stage,
+#                                   kernel_size=self.kernel_width,
+#                                   layer_norm=layer_norm,
+#                                   non_linearity=non_linearity,
+#                                   dilation=self.stage4_dilation),
+#                 InvertedResidualK(output_channels, output_channels, False,
+#                                   kernel_size=self.kernel_width,
+#                                   layer_norm=layer_norm,
+#                                   non_linearity=non_linearity,
+#                                   dilation=self.stage4_dilation),
+#             )
+#         else:
+#             conv5 = torch.nn.Sequential(
+#                 torch.nn.Conv2d(input_channels, output_channels, 1, 1, 0, bias=False),
+#                 layer_norm(output_channels),
+#                 non_linearity(),
+#             )
+
+#         super().__init__(name, stride=stride, out_features=output_channels)
+#         self.input_block = torch.nn.Sequential(*input_modules)
+#         self.stage2 = stages[0]
+#         self.stage3 = stages[1]
+#         self.stage4 = stages[2]
+#         self.conv5 = conv5
+
+#     def forward(self, x):
+#         x = self.input_block(x)
+#         x = self.stage2(x)
+#         x = self.stage3(x)
+#         x = self.stage4(x)
+#         x = self.conv5(x)
+#         return x
+
+#     @classmethod
+#     def cli(cls, parser: argparse.ArgumentParser):
+#         group = parser.add_argument_group('shufflenetv2k')
+#         group.add_argument('--shufflenetv2k-input-conv2-stride',
+#                            default=cls.input_conv2_stride, type=int,
+#                            help='stride of the optional 2nd input convolution')
+#         group.add_argument('--shufflenetv2k-input-conv2-outchannels',
+#                            default=cls.input_conv2_outchannels, type=int,
+#                            help='out channels of the optional 2nd input convolution')
+#         group.add_argument('--shufflenetv2k-stage4-dilation',
+#                            default=cls.stage4_dilation, type=int,
+#                            help='dilation factor of stage 4')
+#         group.add_argument('--shufflenetv2k-kernel',
+#                            default=cls.kernel_width, type=int,
+#                            help='kernel width')
+#         assert not cls.conv5_as_stage
+#         group.add_argument('--shufflenetv2k-conv5-as-stage',
+#                            default=False, action='store_true')
+
+#         layer_norm_group = group.add_mutually_exclusive_group()
+#         layer_norm_group.add_argument('--shufflenetv2k-instance-norm',
+#                                       default=False, action='store_true')
+#         layer_norm_group.add_argument('--shufflenetv2k-group-norm',
+#                                       default=False, action='store_true')
+#         layer_norm_group.add_argument('--shufflenetv2k-layer-norm',
+#                                       default=False, action='store_true')
+
+#         non_linearity_group = group.add_mutually_exclusive_group()
+#         non_linearity_group.add_argument('--shufflenetv2k-leaky-relu',
+#                                          default=False, action='store_true')
+
+#     @classmethod
+#     def configure(cls, args: argparse.Namespace):
+#         cls.input_conv2_stride = args.shufflenetv2k_input_conv2_stride
+#         cls.input_conv2_outchannels = args.shufflenetv2k_input_conv2_outchannels
+#         cls.stage4_dilation = args.shufflenetv2k_stage4_dilation
+#         cls.kernel_width = args.shufflenetv2k_kernel
+#         cls.conv5_as_stage = args.shufflenetv2k_conv5_as_stage
+
+#         # layer norms
+#         if args.shufflenetv2k_layer_norm:
+#             cls.layer_norm = lambda x: torch.nn.LayerNorm(x)
+#         if args.shufflenetv2k_instance_norm:
+#             cls.layer_norm = lambda x: torch.nn.InstanceNorm2d(
+#                 x, affine=True, track_running_stats=True)
+#         if args.shufflenetv2k_group_norm:
+#             cls.layer_norm = lambda x: torch.nn.GroupNorm(
+#                 (32 if x % 32 == 0 else 29) if x > 100 else 4, x)
+
+#         # non-linearities
+#         if args.shufflenetv2k_leaky_relu:
+#             cls.non_linearity = lambda: torch.nn.LeakyReLU(inplace=True)
+
 class ShuffleNetV2K(BaseNetwork):
     """Based on torchvision.models.ShuffleNetV2 where
-    the kernel size in stages 2,3,4 is 5 instead of 3."""
+    the kernel size in stages 2, 3, 4 is 5 instead of 3."""
+
     input_conv2_stride = 0
     input_conv2_outchannels = None
     layer_norm = None
@@ -255,22 +420,28 @@ class ShuffleNetV2K(BaseNetwork):
     kernel_width = 5
     conv5_as_stage = False
     non_linearity = None
+    use_fpn = False
+    fpn_level = 3
+    fpn_out_channels = 1024
 
     def __init__(self, name, stages_repeats, stages_out_channels):
-        layer_norm = ShuffleNetV2K.layer_norm
-        if layer_norm is None:
-            layer_norm = torch.nn.BatchNorm2d
-        non_linearity = ShuffleNetV2K.non_linearity
-        if non_linearity is None:
-            non_linearity = lambda: torch.nn.ReLU(inplace=True)
+        # Initialize the base network
+        super().__init__(name, stride=16, out_features=stages_out_channels[-1])
+
+        layer_norm = ShuffleNetV2K.layer_norm or torch.nn.BatchNorm2d
+        non_linearity = ShuffleNetV2K.non_linearity or (lambda: torch.nn.ReLU(inplace=True))
 
         if len(stages_repeats) != 3:
             raise ValueError('expected stages_repeats as list of 3 positive ints')
         if len(stages_out_channels) != 5:
             raise ValueError('expected stages_out_channels as list of 5 positive ints')
+
         _stage_out_channels = stages_out_channels
 
         stride = 16  # in the default configuration
+        if self.use_fpn:
+            stride //= 2 ** (4 - self.fpn_level)
+
         input_modules = []
         input_channels = 3
         output_channels = _stage_out_channels[0]
@@ -281,8 +452,9 @@ class ShuffleNetV2K(BaseNetwork):
         )
         input_modules.append(conv1)
         input_channels = output_channels
+        input_channels1 = input_channels
 
-        # optional use a conv in place of the max pool
+        # Optional use of a conv instead of max pool
         if self.input_conv2_stride:
             output_channels = self.input_conv2_outchannels or input_channels
             conv2 = torch.nn.Sequential(
@@ -293,13 +465,11 @@ class ShuffleNetV2K(BaseNetwork):
             input_modules.append(conv2)
             stride *= 2
             input_channels = output_channels
-            LOG.debug('replaced max pool with [3x3 conv, bn, relu]')
 
         stages = []
         for repeats, output_channels, dilation in zip(
                 stages_repeats, _stage_out_channels[1:], [1, 1, self.stage4_dilation]):
             stage_stride = 2 if dilation == 1 else 1
-            stride = int(stride * stage_stride / 2)
             seq = [InvertedResidualK(input_channels, output_channels, True,
                                      kernel_size=self.kernel_width,
                                      layer_norm=layer_norm,
@@ -314,16 +484,12 @@ class ShuffleNetV2K(BaseNetwork):
                                              dilation=dilation))
             stages.append(torch.nn.Sequential(*seq))
             input_channels = output_channels
+        input_channels3 = input_channels
 
         output_channels = _stage_out_channels[-1]
         if self.conv5_as_stage:
-            # Two stages are about the same number of parameters as one
-            # convolution.
-            # Conv: 1392*1392
-            # Two Stages: 4 * 696*696 + 2 * 5^2*696
-            use_first_in_stage = input_channels != output_channels
             conv5 = torch.nn.Sequential(
-                InvertedResidualK(input_channels, output_channels, use_first_in_stage,
+                InvertedResidualK(input_channels, output_channels, input_channels != output_channels,
                                   kernel_size=self.kernel_width,
                                   layer_norm=layer_norm,
                                   non_linearity=non_linearity,
@@ -341,7 +507,13 @@ class ShuffleNetV2K(BaseNetwork):
                 non_linearity(),
             )
 
-        super().__init__(name, stride=stride, out_features=output_channels)
+        if self.use_fpn:
+            self.fpn = FPN(
+                in_channels=[input_channels1, input_channels1 * 2, input_channels1 * 4, input_channels1 * 8],
+                out_channels=input_channels1 * 8,
+                fpn_level=self.fpn_level
+            )
+
         self.input_block = torch.nn.Sequential(*input_modules)
         self.stage2 = stages[0]
         self.stage3 = stages[1]
@@ -351,9 +523,13 @@ class ShuffleNetV2K(BaseNetwork):
     def forward(self, x):
         x = self.input_block(x)
         x = self.stage2(x)
-        x = self.stage3(x)
-        x = self.stage4(x)
-        x = self.conv5(x)
+        x3 = self.stage3(x)
+        x4 = self.stage4(x3)
+        if self.use_fpn:
+            # print('FPN is used')
+            x4 = self.fpn([x3, x4])
+
+        x = self.conv5(x4)
         return x
 
     @classmethod
@@ -386,6 +562,20 @@ class ShuffleNetV2K(BaseNetwork):
         non_linearity_group = group.add_mutually_exclusive_group()
         non_linearity_group.add_argument('--shufflenetv2k-leaky-relu',
                                          default=False, action='store_true')
+        
+        group.add_argument('--shufflenetv2k-use-fpn', default=False, action='store_true',
+                           help='adds a FPN after the shufflenetv2k network '
+                                'to obtain higher res feature maps')
+
+        fpn_out_channels = group.add_argument('--shufflenetv2k-fpn-out-channels',
+                           default=cls.fpn_out_channels, type=int,
+                           help='output channels of the FPN (None to use the '
+                                'default number of channels of the shufflenetv2k network)')
+
+        fpn_level = group.add_argument('--shufflenetv2k-fpn-level',
+                           default=cls.fpn_level, type=int,
+                           help='FPN pyramid level, must be between 1 '
+                                '(highest resolution) and 4 (lowest resolution)')
 
     @classmethod
     def configure(cls, args: argparse.Namespace):
@@ -408,8 +598,7 @@ class ShuffleNetV2K(BaseNetwork):
         # non-linearities
         if args.shufflenetv2k_leaky_relu:
             cls.non_linearity = lambda: torch.nn.LeakyReLU(inplace=True)
-
-
+            
 class MobileNetV2(BaseNetwork):
     pretrained = True
 
