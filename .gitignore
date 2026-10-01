@@ -44,9 +44,14 @@ data/
 *.pkl-*
 *.pkl.*
 *.pt
+*.pth
+*.ckpt
 *.log
 *.zip
 outputs/
+visualizations/
+evaluation_audits/
+release_assets/
 all-images/
 shared/
 decoder.prof

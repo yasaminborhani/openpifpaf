@@ -130,15 +130,27 @@ class Factory:
         elif len(decoders) == 1:
             pass
         elif cls.decoder_request is None:
+            # Multiple decoder *classes* (e.g. CifCaf + PoseSimilarity) is normal:
+            # keep the highest-priority one. Multiple instances of the same class
+            # usually means multi-dataset CIF/CAF pairs — require an explicit choice.
+            from collections import Counter
+            class_counts = Counter(d.__class__.__name__ for d in decoders)
+            duplicated = sorted(name for name, n in class_counts.items() if n > 1)
+            options = '\n'.join(
+                f'  --decoder={dec.__class__.__name__.lower()}:{dec.request_index}'
+                for dec in decoders
+            )
+            if duplicated:
+                raise Exception(
+                    'Multiple decoders of the same class available '
+                    f'({", ".join(duplicated)}); refusing to silently use the first.\n'
+                    f'Available:\n{options}\n'
+                    'Pass --task=<name> / --dataset=<name> to keep one CIF/CAF pair, '
+                    'or select explicitly with --decoder=...')
             LOG.info(
-                'No specific decoder requested. Using the first one from:\n'
-                '%s\n'
-                'Use any of the above arguments to select one or multiple '
-                'decoders and to suppress this message.',
-                '\n'.join(
-                    f'  --decoder={dec.__class__.__name__.lower()}:{dec.request_index}'
-                    for dec in decoders
-                )
+                'Multiple decoder classes available. Using the first (highest priority) '
+                'from:\n%s\nSuppress with an explicit --decoder=...',
+                options,
             )
             decoders = [decoders[0]]
 

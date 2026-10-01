@@ -17,7 +17,13 @@ def factory(dataset):
 
 def cli(parser):
     group = parser.add_argument_group('generic data module parameters')
-    group.add_argument('--dataset')
+    group.add_argument(
+        '--dataset', '--task', '--heads',
+        dest='dataset',
+        default=None,
+        help=('dataset / trained head to use; for eval/predict this selects '
+              'which CIF/CAF head pair to decode'),
+    )
     group.add_argument('--loader-workers',
                        default=None, type=int,
                        help='number of workers for data loading')

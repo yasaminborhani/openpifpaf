@@ -441,7 +441,9 @@ class Factory(Configurable):
                     progress=self.download_progress)
             else:
                 try:
-                    checkpoint = torch.load(checkpoint)
+                    # Checkpoints contain serialized model objects, not only tensors.
+                    # Load only files from a source the user trusts.
+                    checkpoint = torch.load(checkpoint, weights_only=False)
                 except FileNotFoundError as e:
                     raise Exception('Checkpoint "{}" not found. Pre-trained checkpoints: {}'.format(
                         checkpoint,

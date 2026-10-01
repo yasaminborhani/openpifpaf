@@ -15,7 +15,7 @@ import thop
 import torch
 
 from . import datasets, decoder, logger, network, show, visualizer, __version__
-from .predictor import Predictor
+from .predictor import Predictor, resolve_head_metas
 
 LOG = logging.getLogger(__name__)
 
@@ -135,7 +135,9 @@ def evaluate(args):
         print('{} not found. Processing: {}'.format(stats_file, network.Factory.checkpoint))
 
     datamodule = datasets.factory(args.dataset)
-    predictor = Predictor(head_metas=datamodule.head_metas)
+    predictor = Predictor(
+        head_metas=resolve_head_metas(args.dataset, configure_defaults=False))
+
 
     data_loader = datamodule.eval_loader()
     prediction_loader = predictor.enumerated_dataloader(enumerate(data_loader))

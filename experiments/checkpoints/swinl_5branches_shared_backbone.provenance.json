@@ -1,0 +1,95 @@
+{
+  "created_utc": "2026-09-28T14:49:36.547548+00:00",
+  "construction": "Restored the trained bicycle CIF/CAF modules onto the original four-task model after verifying every shared encoder/FPN state tensor agrees within the recorded floating-point tolerance. Original four-task encoder/FPN and all trained head tensors are retained.",
+  "joint_checkpoint": "cocoanicarlane-swinl-fpn-l200-mixedbs64-lrx01-aug-att.pt.epoch450",
+  "joint_checkpoint_epoch": 450,
+  "bicycle_checkpoint": "bike-swinl-100epochs-fold1-att-fpn-bs32-transfer-freeze-aug-2-363cee63.pt",
+  "bicycle_checkpoint_epoch": 550,
+  "joint_checkpoint_sha256": "1d5a59603aa8c5b29044a929fd3fec46dcb60a7f4e955925ba273869df7c2aed",
+  "bicycle_checkpoint_sha256": "363cee63e6eca99ede44ca3e1e860046e24d74d880e1e527eee9404cdf4e757e",
+  "shared_encoder_fpn_identical": false,
+  "shared_encoder_fpn_numerically_equivalent": true,
+  "shared_encoder_fpn_maximum_absolute_difference": 1.9073486328125e-06,
+  "shared_encoder_fpn_comparison_rtol": 1e-05,
+  "shared_encoder_fpn_comparison_atol": 1e-07,
+  "shared_state_tensor_count": 359,
+  "original_four_task_head_tensors_retained": true,
+  "trained_bicycle_head_tensors_retained": true,
+  "new_training_performed": false,
+  "five_task_joint_fine_tuning_performed": false,
+  "single_encoder_forward": true,
+  "output_checkpoint": "swinl_5branches_shared_backbone.pt",
+  "heads": [
+    {
+      "dataset": "cocokp",
+      "name": "cif",
+      "index": 0,
+      "keypoints": 17,
+      "stride": 8
+    },
+    {
+      "dataset": "cocokp",
+      "name": "caf",
+      "index": 1,
+      "keypoints": 17,
+      "stride": 8
+    },
+    {
+      "dataset": "animal",
+      "name": "cif",
+      "index": 2,
+      "keypoints": 20,
+      "stride": 8
+    },
+    {
+      "dataset": "animal",
+      "name": "caf",
+      "index": 3,
+      "keypoints": 20,
+      "stride": 8
+    },
+    {
+      "dataset": "apollo",
+      "name": "cif",
+      "index": 4,
+      "keypoints": 24,
+      "stride": 8
+    },
+    {
+      "dataset": "apollo",
+      "name": "caf",
+      "index": 5,
+      "keypoints": 24,
+      "stride": 8
+    },
+    {
+      "dataset": "openlane",
+      "name": "cif",
+      "index": 6,
+      "keypoints": 24,
+      "stride": 16
+    },
+    {
+      "dataset": "openlane",
+      "name": "caf",
+      "index": 7,
+      "keypoints": 24,
+      "stride": 16
+    },
+    {
+      "dataset": "cocobicyclekp",
+      "name": "cif",
+      "index": 8,
+      "keypoints": 6,
+      "stride": 8
+    },
+    {
+      "dataset": "cocobicyclekp",
+      "name": "caf",
+      "index": 9,
+      "keypoints": 6,
+      "stride": 8
+    }
+  ],
+  "output_checkpoint_sha256": "5bc691466e39aaf87cc00ff554fb89bb9317e7c9f572b33269e24082b7be6000"
+}

@@ -64,7 +64,7 @@ class MeanPixelError(Base):
                 
                 dist = preds[i:i + 1] - gt
                 dist_scaled = dist * scale
-                print("dist = ", dist)
+                # print("dist = ", dist)
                 d = float(np.linalg.norm(dist, axis=1))
                 d_scaled = float(np.linalg.norm(dist_scaled, axis=1))
 
@@ -74,12 +74,12 @@ class MeanPixelError(Base):
                     detections.append(1)
                 else:
                     detections.append(0)
-                    print('d = ', d )
+                    # print('d = ', d )
                 if d_scaled < 20:
                     errors_scaled.append(d)
                     detections_scaled.append(1)
                 else:
-                    print('d_scaled = ', d_scaled)
+                    # print('d_scaled = ', d_scaled)
                     detections_scaled.append(0)
 
         # Stats for a single image

@@ -745,6 +745,7 @@ class SwinTransformer(BaseNetwork):
     use_fpn = False
     fpn_level = 3
     fpn_out_channels = None
+    freeze_backbone = False
 
     def __init__(self, name, swin_net):
         embed_dim = swin_net().embed_dim
@@ -779,10 +780,18 @@ class SwinTransformer(BaseNetwork):
                                  drop_path_rate=self.drop_path_rate,
                                  out_indices=out_indices)
 
+        if self.freeze_backbone:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+
         self.fpn = None
         if self.use_fpn:
             self.fpn = FPN([embed_dim, 2 * embed_dim, 4 * embed_dim, 8 * embed_dim],
                            self.out_features, self.fpn_level)
+
+            if self.freeze_backbone:
+                for param in self.fpn.parameters():
+                    param.requires_grad = False
 
     def forward(self, x):
         if self.input_upsample_op is not None:
@@ -825,6 +834,9 @@ class SwinTransformer(BaseNetwork):
                            default=True, action='store_false',
                            help='use randomly initialized models')
 
+        group.add_argument('--swin-freeze-backbone', default=False, action='store_true',
+                           help='Freeze the backbone to prevent training its weights')
+
     @classmethod
     def configure(cls, args: argparse.Namespace):
         cls.drop_path_rate = args.swin_drop_path_rate
@@ -833,6 +845,7 @@ class SwinTransformer(BaseNetwork):
         cls.fpn_out_channels = args.swin_fpn_out_channels
         cls.fpn_level = args.swin_fpn_level
         cls.pretrained = args.swin_pretrained
+        cls.freeze_backbone = args.swin_freeze_backbone
 
 
 class XCiT(BaseNetwork):
@@ -996,12 +1009,12 @@ class ConvNeXtV2(BaseNetwork):
     use_fpn = False
     fpn_level = 3
     fpn_out_channels = 1024
+    freeze_backbone = False
 
     def __init__(self, name, convnextv2_net):
         convnextv2_backbone, out_features_backbone = convnextv2_net(self.pretrained)
         out_features = out_features_backbone[-1]
-      
-        stride=32 
+        stride = 32
         if self.use_fpn:
             LOG.debug('swin output FPN level: %d', self.fpn_level)
             stride //= 2 ** (4 - self.fpn_level)
@@ -1009,20 +1022,25 @@ class ConvNeXtV2(BaseNetwork):
         super().__init__(name, stride=stride, out_features=out_features)
         self.backbone = convnextv2_backbone
 
+        if self.freeze_backbone:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+
         self.fpn = None
         if self.use_fpn:
             self.fpn = FPN(in_channels=out_features_backbone, out_channels=self.fpn_out_channels, fpn_level=self.fpn_level)
+            if self.freeze_backbone:
+                for param in self.fpn.parameters():
+                    param.requires_grad = False
 
     def forward(self, x):
         outs = self.backbone(x)
-
         if self.fpn is not None:
-            # print('FPN is used')
             x = self.fpn(outs)
         else:
             x = outs[-1]
-
         return x
+
 
     @classmethod
     def cli(cls, parser: argparse.ArgumentParser):
@@ -1046,12 +1064,17 @@ class ConvNeXtV2(BaseNetwork):
                            help='FPN pyramid level, must be between 1 '
                                 '(highest resolution) and 4 (lowest resolution)')
 
+        group.add_argument('--convnextv2-freeze-backbone', default=False, action='store_true',
+                           help='Freeze the backbone to prevent training its weights')
+
     @classmethod
     def configure(cls, args: argparse.Namespace):
         cls.pretrained = args.convnextv2_pretrained
         cls.use_fpn = args.convnextv2_use_fpn
         cls.fpn_out_channels = args.convnextv2_fpn_out_channels
         cls.fpn_level = args.convnextv2_fpn_level
+        cls.freeze_backbone = args.convnextv2_freeze_backbone
+
 
 
 # class CLIPConvNeXt(BaseNetwork):
@@ -1085,15 +1108,20 @@ class CLIPConvNeXt(BaseNetwork):
     use_fpn = False
     fpn_level = 3
     fpn_out_channels = 1024
+    freeze_backbone = False
 
     def __init__(self, name, clipconvnext_net):
         clipconvnext_backbone, out_features = clipconvnext_net(self.pretrained)
-        stride = 32 
+        stride = 32
         if self.use_fpn:
             LOG.debug('swin output FPN level: %d', self.fpn_level)
             stride //= 2 ** (4 - self.fpn_level)
         super().__init__(name, stride=stride, out_features=out_features)
         self.backbone = clipconvnext_backbone
+
+        if self.freeze_backbone:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
 
         # Define input channels based on the backbone architecture
         if self.use_fpn:
@@ -1104,6 +1132,10 @@ class CLIPConvNeXt(BaseNetwork):
             # Registering the actual hook methods directly
             self.backbone.visual.trunk.stages[2].register_forward_hook(self.hook_stage_2)
             self.backbone.visual.trunk.stages[3].register_forward_hook(self.hook_stage_3)
+
+            if self.freeze_backbone:
+                for param in self.fpn.parameters():
+                    param.requires_grad = False
 
     def hook_stage_2(self, module, input, output):
         """Hook to capture output of stage 2."""
@@ -1151,11 +1183,13 @@ class CLIPConvNeXt(BaseNetwork):
                            help='FPN pyramid level, must be between 1 '
                                 '(highest resolution) and 4 (lowest resolution)')
 
+        group.add_argument('--clipconvnext-freeze-backbone', default=False, action='store_true',
+                           help='Freeze the backbone to prevent training its weights')
+
     @classmethod
     def configure(cls, args: argparse.Namespace):
         cls.pretrained = args.clipconvnext_pretrained
         cls.use_fpn = args.clipconvnext_use_fpn
         cls.fpn_out_channels = args.clipconvnext_fpn_out_channels
         cls.fpn_level = args.clipconvnext_fpn_level
-
-
+        cls.freeze_backbone = args.clipconvnext_freeze_backbone

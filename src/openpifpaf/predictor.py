@@ -4,9 +4,97 @@ import logging
 import PIL
 import torch
 
-from . import datasets, decoder, network, transforms, visualizer
+from . import datasets, decoder, headmeta, network, transforms, visualizer
 
 LOG = logging.getLogger(__name__)
+
+
+def _configure_datamodule_defaults(name: str):
+    """Configure one datamodule from its own CLI defaults (no full datasets.cli)."""
+    if name not in datasets.DATAMODULES:
+        known = ', '.join(sorted(datasets.DATAMODULES))
+        raise SystemExit(
+            'Unknown task/dataset {!r}. Known: {}'.format(name, known)
+        )
+
+    dm_cls = datasets.DATAMODULES[name]
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.set_defaults(debug=False, pin_memory=False)
+    dm_cls.cli(parser)
+    dm_args = parser.parse_args([])
+    if not hasattr(dm_args, 'debug'):
+        dm_args.debug = False
+    if not hasattr(dm_args, 'pin_memory'):
+        dm_args.pin_memory = False
+    dm_cls.configure(dm_args)
+
+
+def resolve_head_metas(task, *, configure_defaults=False):
+    """Return head metas for a task/dataset, matching eval head filtering.
+
+    Multi-dataset checkpoints keep one CIF/CAF pair per dataset. Passing the
+    task name here keeps only that pair before decoding.
+
+    Args:
+        task: dataset / head name, e.g. ``openlane`` or ``openlane-culane``.
+        configure_defaults: if True, configure datamodule(s) from their CLI
+            defaults (for slim predict/video CLIs). If False, assume
+            ``datasets.configure`` already ran (eval/train).
+    """
+    if not task:
+        return None
+
+    if '-' in task:
+        LOG.warning(
+            'task=%s keeps multiple head pairs; decoding may still require '
+            '--decoder unless consolidation leaves a single CifCaf. Prefer a '
+            'single task name (e.g. openlane or culane).',
+            task,
+        )
+
+    if configure_defaults:
+        for name in task.split('-'):
+            _configure_datamodule_defaults(name)
+
+    datamodule = datasets.factory(task)
+    head_metas = list(datamodule.head_metas)
+    LOG.info(
+        'using heads for task %s: %s',
+        task,
+        [(meta.dataset, meta.name) for meta in head_metas],
+    )
+    return head_metas
+
+
+def task_from_args(args):
+    """Prefer --task/--heads; fall back to --dataset (eval)."""
+    return getattr(args, 'task', None) or getattr(args, 'dataset', None)
+
+
+def assert_task_selected(model_head_metas, task):
+    """Fail clearly when a multi-head checkpoint is used without a task."""
+    if task:
+        return
+
+    cifcaf_pairs = sum(
+        1
+        for meta, meta_next in zip(model_head_metas[:-1], model_head_metas[1:])
+        if isinstance(meta, headmeta.Cif) and isinstance(meta_next, headmeta.Caf)
+    )
+    if cifcaf_pairs <= 1:
+        return
+
+    datasets_present = sorted({meta.dataset for meta in model_head_metas})
+    raise SystemExit(
+        'Checkpoint has {} CIF/CAF head pairs (tasks: {}). '
+        'Pass --task=<name> so predict filters heads like eval, '
+        'e.g. --task={}. '
+        'Alternatively select a decoder with --decoder=cifcaf:0.'.format(
+            cifcaf_pairs,
+            ', '.join(datasets_present),
+            datasets_present[0] if datasets_present else '<name>',
+        )
+    )
 
 
 class Predictor:
@@ -71,6 +159,19 @@ class Predictor:
         group.add_argument('--precise-rescaling', dest='fast_rescaling',
                            default=True, action='store_false',
                            help='use more exact image rescaling (requires scipy)')
+
+    @classmethod
+    def cli_task(cls, parser: argparse.ArgumentParser):
+        """Slim flags: which trained head to decode (no full datasets.cli)."""
+        group = parser.add_argument_group('Task heads')
+        group.add_argument(
+            '--task', '--heads', '--dataset',
+            dest='task',
+            default=None,
+            help=('which trained head to use for decoding (filters that '
+                  'dataset\'s CIF/CAF pair, same role as eval --dataset). '
+                  'Example: --task=openlane'),
+        )
 
     @classmethod
     def configure(cls, args: argparse.Namespace):

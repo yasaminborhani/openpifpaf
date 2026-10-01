@@ -169,9 +169,9 @@ class CocoBicycleKp(openpifpaf.datasets.DataModule, openpifpaf.Configurable):
         #     cls.eval_image_dir = cls._test2017_image_dir
         #     cls.eval_annotations = cls._testdev2017_annotations
         #     cls.annotation_filter = False
-        cls.eval_long_edge = args.coco_eval_long_edge
-        cls.eval_orientation_invariant = args.coco_eval_orientation_invariant
-        cls.eval_extended_scale = args.coco_eval_extended_scale
+        cls.eval_long_edge = args.cocobicyclekp_eval_long_edge
+        cls.eval_orientation_invariant = args.cocobicyclekp_eval_orientation_invariant
+        cls.eval_extended_scale = args.cocobicyclekp_eval_extended_scale
 
         if args.cocobicyclekp_eval_test2017 \
                 and not args.write_predictions and not args.debug:
@@ -319,4 +319,5 @@ class CocoBicycleKp(openpifpaf.datasets.DataModule, openpifpaf.Configurable):
             max_per_image=20,
             category_ids=[1],
             iou_type='keypoints',
+            keypoint_oks_sigmas=COCO_BICYCLE_SIGMAS,
         )]

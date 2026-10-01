@@ -28,7 +28,7 @@ import time
 import torch
 
 from . import decoder, logger, network, show, visualizer, __version__
-from .predictor import Predictor
+from .predictor import Predictor, assert_task_selected, resolve_head_metas, task_from_args
 from .stream import Stream
 
 LOG = logging.getLogger(__name__)
@@ -53,6 +53,7 @@ def cli():  # pylint: disable=too-many-statements,too-many-branches
     decoder.cli(parser)
     logger.cli(parser)
     Predictor.cli(parser)
+    Predictor.cli_task(parser)
     show.cli(parser)
     Stream.cli(parser)
     visualizer.cli(parser)
@@ -105,8 +106,6 @@ def cli():  # pylint: disable=too-many-statements,too-many-branches
     assert args.json_output is None or not os.path.exists(args.json_output)
 
     return args
-
-
 def main():
     args = cli()
 
@@ -114,10 +113,13 @@ def main():
     LOG.info('Running PyTorch %s', torch.__version__)
 
     Predictor.loader_workers = 1
+    task = task_from_args(args)
     predictor = Predictor(
+        head_metas=resolve_head_metas(task, configure_defaults=True),
         visualize_image=(not args.json_output or args.video_output),
         visualize_processed_image=args.debug,
     )
+    assert_task_selected(predictor.model_cpu.head_metas, task)
     capture = Stream(args.source, preprocess=predictor.preprocess_factory())
 
     annotation_painter = show.AnnotationPainter()

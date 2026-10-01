@@ -10,7 +10,7 @@ import platform
 import torch
 
 from . import decoder, logger, network, show, visualizer, __version__
-from .predictor import Predictor
+from .predictor import Predictor, assert_task_selected, resolve_head_metas, task_from_args
 
 LOG = logging.getLogger(__name__)
 
@@ -21,6 +21,8 @@ def cli():
         usage='%(prog)s [options] images',
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        epilog='Multi-head checkpoints: pass --task=<name> (e.g. openlane) '
+               'to decode with that dataset\'s CIF/CAF heads.',
     )
     parser.add_argument('--version', action='version',
                         version='OpenPifPaf {version}'.format(version=__version__))
@@ -29,6 +31,7 @@ def cli():
     logger.cli(parser)
     network.Factory.cli(parser)
     Predictor.cli(parser)
+    Predictor.cli_task(parser)
     show.cli(parser)
     visualizer.cli(parser)
 
@@ -104,11 +107,15 @@ def main():
     LOG.info('Running PyTorch %s', torch.__version__)
 
     annotation_painter = show.AnnotationPainter()
+    task = task_from_args(args)
 
     predictor = Predictor(
+        head_metas=resolve_head_metas(task, configure_defaults=True),
         visualize_image=(args.show or args.image_output is not None),
         visualize_processed_image=args.debug,
     )
+    assert_task_selected(predictor.model_cpu.head_metas, task)
+
     for pred, _, meta in predictor.images(args.images):
         # json output
         if args.json_output is not None:

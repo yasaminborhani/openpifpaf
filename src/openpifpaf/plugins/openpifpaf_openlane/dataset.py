@@ -36,11 +36,9 @@ class CocoDataset(torch.utils.data.Dataset):
 
         self.category_ids = category_ids
 
-        self.ids = []
-        for cat_id in self.category_ids:
-            self.ids.extend(self.coco.getImgIds(catIds=cat_id))
-
-        print("IDS:", self.ids)
+        # Include each benchmark image once, including empty images when
+        # annotation filtering is disabled for full-split evaluation.
+        self.ids = self.coco.getImgIds()
         if annotation_filter:
             self.filter_for_annotations(min_kp_anns=min_kp_anns)
         elif min_kp_anns:

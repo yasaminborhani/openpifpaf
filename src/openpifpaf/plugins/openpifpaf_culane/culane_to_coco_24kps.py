@@ -87,10 +87,23 @@ class CuLaneToCoco:
                     validation_files.append(relative_file)
         print("validation files: ", validation_files[:10])
 
+        test_files = []
+        test_dir = os.path.join(dir_dataset, "test")
+        for segments in os.listdir(test_dir):
+            seg_path = os.path.join(test_dir, segments)
+            for dir, _, files in os.walk(seg_path):
+                for file in files:
+                    if not file.endswith('.json'):
+                        continue
+                    relative_file = os.path.join(segments,dir, file)
+                    test_files.append(relative_file)
+        print("test files: ", test_files[:10])
+
         # Load train val split
         self.splits = {
             "training": training_files,
             "validation": validation_files,
+            "test": test_files
         }
     def downsample(self, u, v, target_length=24):
         """
@@ -138,7 +151,7 @@ class CuLaneToCoco:
 
             if self.single_sample:
                 ann_paths = self.splits['training'][:1]
-                print(ann_paths)
+                # print(ann_paths)
 
             #Iterate through json files and process into COCO style
             for ann_path in ann_paths:
@@ -156,11 +169,13 @@ class CuLaneToCoco:
                 # determine training or val from ann_path
                 if "training" in ann_path:
                     file_path = os.path.join(self.dir_images, "training", relative_file_path)
-                else:
-                    file_path = os.path.join(self.dir_images, "validation",relative_file_path)
+                elif "validation" in ann_path:
+                    file_path = os.path.join(self.dir_images, "validation", relative_file_path)
+                elif "test" in ann_path:
+                    file_path = os.path.join(self.dir_images, "test", relative_file_path)
                
                 img_name = os.path.splitext(file_path)[0]   # Returns tuple (file_name, ext)
-                print("img_name: ", img_name)
+                # print("img_name: ", img_name)
                 pattern = r".*/(\d+)_\d+\.MP4/(\d+)$"
                 match = re.search(pattern, img_name)
                 

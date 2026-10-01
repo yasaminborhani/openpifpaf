@@ -1,0 +1,68 @@
+{
+  "dataset": "nuScenes",
+  "role": "qualitative inference only",
+  "checkpoint": "swinl_5branches_shared_backbone.pt",
+  "model_training_on_nuscenes": false,
+  "samples": [
+    {
+      "prediction_file": "predictions/01_063_scene-0733_CAM_FRONT.json",
+      "scene": "scene-0733",
+      "sample_token": "20d404c7a0d9453c9e9976998acbc239",
+      "image_file": "n008-2018-08-29-16-04-13-0400__CAM_FRONT__1535573999862404.jpg"
+    },
+    {
+      "prediction_file": "predictions/02_103_scene-0787_CAM_FRONT.json",
+      "scene": "scene-0787",
+      "sample_token": "c06e21a3730c4525b2bfd2bdeb257153",
+      "image_file": "n015-2018-10-02-10-56-37+0800__CAM_FRONT__1538449187912460.jpg"
+    },
+    {
+      "prediction_file": "predictions/03_402_scene-0718_CAM_FRONT.json",
+      "scene": "scene-0718",
+      "sample_token": "fa168bb25aa041278b4b83dd4e45f8e5",
+      "image_file": "n008-2018-08-29-16-04-13-0400__CAM_FRONT__1535573625362404.jpg"
+    },
+    {
+      "prediction_file": "predictions/04_225_scene-0563_CAM_FRONT.json",
+      "scene": "scene-0563",
+      "sample_token": "6ef078bc31f94c499f0a8c2d2addfa19",
+      "image_file": "n008-2018-08-31-11-37-23-0400__CAM_FRONT__1535730598912404.jpg"
+    },
+    {
+      "prediction_file": "predictions/05_021_scene-0517_CAM_FRONT.json",
+      "scene": "scene-0517",
+      "sample_token": "24ce03d45f854fe4a47f513eb6f11205",
+      "image_file": "n008-2018-08-28-16-57-39-0400__CAM_FRONT__1535489981412404.jpg"
+    },
+    {
+      "prediction_file": "predictions/06_024_scene-0686_CAM_FRONT.json",
+      "scene": "scene-0686",
+      "sample_token": "ca38df9ffa594678aab89d6f6425e9a7",
+      "image_file": "n008-2018-08-28-16-16-48-0400__CAM_FRONT__1535488222762404.jpg"
+    },
+    {
+      "prediction_file": "predictions/07_081_scene-0397_CAM_FRONT.json",
+      "scene": "scene-0397",
+      "sample_token": "423ad65258ca49cb9473116df04c6ffd",
+      "image_file": "n008-2018-08-31-11-56-46-0400__CAM_FRONT__1535731395162404.jpg"
+    },
+    {
+      "prediction_file": "predictions/08_141_scene-0731_CAM_FRONT.json",
+      "scene": "scene-0731",
+      "sample_token": "4c1a85949ba6488bab05d16fe3a77212",
+      "image_file": "n008-2018-08-29-16-04-13-0400__CAM_FRONT__1535573968662404.jpg"
+    },
+    {
+      "prediction_file": "predictions/09_157_scene-0500_CAM_FRONT.json",
+      "scene": "scene-0500",
+      "sample_token": "d7fcf5ad0c744bc8b369651e0cb111fe",
+      "image_file": "n008-2018-08-28-13-40-50-0400__CAM_FRONT__1535478130162404.jpg"
+    },
+    {
+      "prediction_file": "predictions/10_180_scene-0984_CAM_FRONT.json",
+      "scene": "scene-0984",
+      "sample_token": "00c9b9b78fc2426c98d33e643a5ab527",
+      "image_file": "n015-2018-09-25-11-10-38+0800__CAM_FRONT__1537845438362460.jpg"
+    }
+  ]
+}
