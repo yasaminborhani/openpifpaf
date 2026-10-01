@@ -7,7 +7,7 @@ PoseDriver is research code for detecting human, animal, car, bicycle, and lane 
 - The model, dataset plugins, training and evaluation entry points, and selected experiment commands.
 - A portable [five-branch inference command](experiments/predict_five_branch.py) and [checkpoint assembly script](experiments/restore_five_branch_checkpoint.py).
 - The [Figure 7 prediction gallery](gallery/nuscenes/README.md), with ten nuScenes sample IDs and saved predictions. Raw nuScenes images are obtained from nuScenes itself.
-- Provenance and SHA-256 for the released Swin-L + FPN five-branch checkpoint in [the checkpoint record](experiments/checkpoints/swinl_5branches_shared_backbone.provenance.json). Download the `swinl_5branches_shared_backbone.pt` asset from this repository's GitHub Releases page; model weights are intentionally outside Git.
+- Provenance and SHA-256 for the Swin-L + FPN five-branch checkpoint in [the checkpoint record](experiments/checkpoints/swinl_5branches_shared_backbone.provenance.json). The `swinl_5branches_shared_backbone.pt` release asset is being prepared for upload; model weights are intentionally outside Git.
 
 The five-branch checkpoint was assembled from the epoch-450 four-task Swin-L + FPN model and the bicycle CIF/CAF heads learned in an epoch-550 frozen-backbone adaptation. The shared encoder/FPN tensors were checked for numerical equivalence before assembly. The checkpoint evaluates all five branches from **one encoder forward pass**; it was not jointly fine-tuned on five datasets and was not trained on nuScenes. See the provenance JSON for source checkpoint hashes and verification tolerances.
 
@@ -27,7 +27,7 @@ The optional `backbones` extra installs dependencies for the other architecture 
 
 ## Five-branch prediction
 
-Download the released checkpoint and run:
+When the checkpoint asset is available, download it and run:
 
 ```bash
 python experiments/predict_five_branch.py \
