@@ -86,11 +86,11 @@ setuptools.setup(
         'python-json-logger',
         'torch>=1.9.0',
         'torchvision>=0.10.0',
+        'timm>=0.4.9',  # imported by the Swin backbone during normal CLI startup
         'pillow!=8.3.0',  # exclusion torchvision 0.10.0 compatibility
     ],
     extras_require={
         'backbones': [
-            'timm>=0.4.9',  # For Swin Transformer and XCiT
             'einops>=0.3',  # required for BotNet
             'mmengine',
             'mmcv>=2.0',

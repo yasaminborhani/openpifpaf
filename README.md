@@ -16,13 +16,14 @@ The five-branch checkpoint was assembled from the epoch-450 four-task Swin-L + F
 The audited nuScenes run used Python 3.10.11, PyTorch 2.1.2+cu121, and one Tesla V100 GPU. A CUDA-capable Linux environment with a C++17 compiler is recommended because OpenPifPaf builds a C++ extension. Install a compatible PyTorch/torchvision pair first, then run:
 
 ```bash
-python -m pip install --no-build-isolation -e '.[backbones,train]'
+python -m pip install --no-build-isolation -e '.[train]'
 python -m pip install pytest
 python -m openpifpaf.predict --help
 ```
 
 The run used the EPFL image `registry.rcp.epfl.ch/vita/opp_all_2:latest` with digest `sha256:d0c983a5c1d2a447a2500648aafc1d603fb93691f3033894a22832769327d598`. This image identifier records the environment used for the audit; public users need not use that private registry.
 That image contains an older system OpenPifPaf installation. When using it, run `export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"` from this repository after installation so Python imports the release checkout.
+The optional `backbones` extra installs dependencies for the other architecture families; the released Swin-L checkpoint does not require them.
 
 ## Five-branch prediction
 
